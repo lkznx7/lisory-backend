@@ -6,5 +6,5 @@ public record AsaasCustomerRequest(
     @JsonProperty("name") String name,
     @JsonProperty("email") String email,
     @JsonProperty("cpfCnpj") String cpfCnpj,
-    @JsonProperty("phone") String phone
+    @JsonProperty("mobilePhone") String phone
 ) {}

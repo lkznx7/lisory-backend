@@ -28,6 +28,7 @@ public record OrderResponse(
         String paymentStatus,
         String paymentMethod,
         String paymentLink,
+        String invoiceUrl,
         UUID shipmentId,
         String shipmentStatus,
         String trackingCode,

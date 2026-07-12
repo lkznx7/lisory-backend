@@ -63,6 +63,10 @@ public class AsaasPaymentProvider implements PaymentProvider {
         );
 
         AsaasChargeResponse charge = client.createCharge(chargeRequest);
+        if (charge == null || charge.id() == null || charge.id().isBlank()
+                || charge.invoiceUrl() == null || charge.invoiceUrl().isBlank()) {
+            throw new IllegalStateException("Asaas returned a payment without id or invoiceUrl");
+        }
 
         log.info("asaas_charge_created", Map.of(
                 "paymentId", charge.id(),
@@ -89,11 +93,9 @@ public class AsaasPaymentProvider implements PaymentProvider {
             throw new RuntimeException("Customer name and email are required");
         }
 
-        AsaasCustomerRequest customerRequest = new AsaasCustomerRequest(
+        return client.findCustomerByCpfCnpj(cpf).orElseGet(() -> client.createCustomer(new AsaasCustomerRequest(
                 name, email, cpf, phone
-        );
-
-        return client.createCustomer(customerRequest);
+        )));
     }
 
     private String mapStatus(String asaasStatus) {

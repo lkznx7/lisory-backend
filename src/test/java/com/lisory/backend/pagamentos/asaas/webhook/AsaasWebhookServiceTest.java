@@ -53,7 +53,7 @@ class AsaasWebhookServiceTest {
 
         Order orderEntity = new Order();
         orderEntity.setId(orderId);
-        orderEntity.setStatus(OrderStatus.AGUARDANDO_PAGAMENTO.name());
+        orderEntity.setStatus(OrderStatus.PENDING_PAYMENT.name());
 
         when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(payment));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));

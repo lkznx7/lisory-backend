@@ -94,7 +94,7 @@ public class OrderFacade {
         BigDecimal shippingCost = request.shippingCost() != null ? request.shippingCost() : BigDecimal.ZERO;
 
         Order order = createOrder(userId, address, coupon, subtotal, discount, request);
-        order.setStatus(OrderStatus.AGUARDANDO_PAGAMENTO.name());
+        order.setStatus(OrderStatus.PENDING_PAYMENT.name());
         order.setShippingCost(shippingCost);
         order.setTotal(subtotal.subtract(discount).add(shippingCost));
         Order savedOrder = orderRepository.save(order);
@@ -118,7 +118,7 @@ public class OrderFacade {
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         OrderStatus currentStatus = OrderStatus.valueOf(order.getStatus());
-        if (currentStatus != OrderStatus.AGUARDANDO_PAGAMENTO) {
+        if (currentStatus != OrderStatus.PENDING_PAYMENT) {
             throw new BusinessException("Order is not awaiting payment");
         }
 

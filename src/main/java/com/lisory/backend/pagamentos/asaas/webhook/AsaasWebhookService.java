@@ -70,7 +70,7 @@ public class AsaasWebhookService {
 
         if ("APPROVED".equals(newStatus)) {
             Order order = orderRepository.findById(orderId).orElse(null);
-            if (order != null && OrderStatus.AGUARDANDO_PAGAMENTO.name().equals(order.getStatus())) {
+            if (order != null && OrderStatus.PENDING_PAYMENT.name().equals(order.getStatus())) {
                 order.setStatus(OrderStatus.PAGO.name());
                 orderRepository.save(order);
                 log.info("asaas_webhook_order_updated", Map.of(

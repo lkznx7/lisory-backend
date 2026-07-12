@@ -4,6 +4,7 @@ import com.lisory.backend.envios.melhorenvio.exception.MelhorEnvioException;
 import com.lisory.backend.exception.BusinessException;
 import com.lisory.backend.exception.InvalidOperationException;
 import com.lisory.backend.exception.ResourceNotFoundException;
+import com.lisory.backend.pagamentos.asaas.exception.AsaasException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,13 @@ public class GlobalExceptionHandler {
         log.error("melhorenvio_error", e);
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(Map.of("error", "Shipping service temporarily unavailable. Please try again."));
+    }
+
+    @ExceptionHandler(AsaasException.class)
+    public ResponseEntity<?> handleAsaasException(AsaasException e) {
+        log.error("asaas_error", e);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(Map.of("error", "Não foi possível iniciar o pagamento. Verifique os dados e tente novamente."));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

@@ -140,7 +140,7 @@ public class OrderService {
         }
         order.setAddress(address);
         order.setCoupon(coupon);
-        order.setStatus(OrderStatus.AGUARDANDO_PAGAMENTO.name());
+        order.setStatus(OrderStatus.PENDING_PAYMENT.name());
         order.setSubtotal(subtotal);
         order.setDiscount(discount);
         order.setShippingCost(BigDecimal.ZERO);
@@ -241,7 +241,7 @@ public class OrderService {
 
     private boolean isValidTransition(OrderStatus current, OrderStatus next) {
         return switch (current) {
-            case AGUARDANDO_PAGAMENTO -> next == OrderStatus.PAGO || next == OrderStatus.CANCELADO;
+            case PENDING_PAYMENT -> next == OrderStatus.PAGO || next == OrderStatus.CANCELADO;
             case PAGO -> next == OrderStatus.PROCESSANDO || next == OrderStatus.CANCELADO;
             case PROCESSANDO -> next == OrderStatus.ENVIADO || next == OrderStatus.CANCELADO;
             case ENVIADO -> next == OrderStatus.ENTREGUE || next == OrderStatus.CANCELADO;
@@ -254,7 +254,7 @@ public class OrderService {
     public Map<String, Object> getDashboardStats() {
         long totalOrders = orderRepository.count();
         long paidOrders = orderRepository.countByStatus("PAGO");
-        long pendingOrders = orderRepository.countByStatus("AGUARDANDO_PAGAMENTO");
+        long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING_PAYMENT.name());
         BigDecimal totalRevenue = orderRepository.sumTotalByStatus("PAGO");
 
         return Map.of(

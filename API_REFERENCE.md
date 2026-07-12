@@ -113,7 +113,7 @@ Produtos não possuem variações (cor, tamanho, modelo). Estoque não é contro
 
 **Gateway:** Infinity Pay (PIX | Cartão)
 **Frete:** Calculado pelo Melhor Envio
-**Status:** `AGUARDANDO_PAGAMENTO` → `PAGO` (atualizado automaticamente pelo Melhor Envio)
+**Status:** `PENDING_PAYMENT` → `PAGO` (updated only by the Asaas payment webhook)
 **Cancelamento:** Cliente não pode cancelar — deve entrar em contato com o suporte.
 
 ### `GET /api/admin/orders`

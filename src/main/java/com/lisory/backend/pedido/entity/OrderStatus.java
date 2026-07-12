@@ -1,7 +1,7 @@
 package com.lisory.backend.pedido.entity;
 
 public enum OrderStatus {
-    AGUARDANDO_PAGAMENTO,
+    PENDING_PAYMENT,
     PAGO,
     PROCESSANDO,
     ENVIADO,
