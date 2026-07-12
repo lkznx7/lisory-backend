@@ -8,6 +8,7 @@ import com.lisory.backend.pagamentos.asaas.dto.AsaasCustomerRequest;
 import com.lisory.backend.pagamentos.asaas.dto.AsaasCustomerResponse;
 import com.lisory.backend.pagamentos.asaas.exception.AsaasException;
 import com.lisory.backend.shared.log.StructuredLogger;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpResponse;
@@ -29,8 +30,24 @@ public class AsaasClient {
     private final RestClient restClient;
     private final AsaasProperties properties;
 
-    public AsaasClient(RestClient.Builder restClientBuilder, AsaasProperties properties) {
+    public AsaasClient(RestClient.Builder restClientBuilder, AsaasProperties properties, Environment environment) {
         this.properties = properties;
+        String apiKey = properties.apiKey();
+        String envVarValue = System.getenv("ASAAS_API_KEY");
+        String envPropertyValue = environment.getProperty("ASAAS_API_KEY");
+        String boundPropertyValue = environment.getProperty("asaas.api-key");
+
+        log.info("asaas_config_probe", Map.of(
+                "apiKeyBound", String.valueOf(apiKey != null && !apiKey.isBlank()),
+                "apiKeyLength", String.valueOf(apiKey == null ? 0 : apiKey.length()),
+                "envVarPresent", String.valueOf(envVarValue != null && !envVarValue.isBlank()),
+                "envVarLength", String.valueOf(envVarValue == null ? 0 : envVarValue.length()),
+                "environmentAsaasApiKeyPresent", String.valueOf(envPropertyValue != null && !envPropertyValue.isBlank()),
+                "environmentAsaasApiKeyLength", String.valueOf(envPropertyValue == null ? 0 : envPropertyValue.length()),
+                "boundPropertyPresent", String.valueOf(boundPropertyValue != null && !boundPropertyValue.isBlank()),
+                "boundPropertyLength", String.valueOf(boundPropertyValue == null ? 0 : boundPropertyValue.length())
+        ));
+
         if (properties.apiKey() == null || properties.apiKey().isBlank()) {
             throw new IllegalStateException("ASAAS_API_KEY must be configured");
         }
