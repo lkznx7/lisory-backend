@@ -4,7 +4,11 @@ import com.lisory.backend.auth.entity.AuthEntity;
 import com.lisory.backend.pedido.dto.OrderRequest;
 import com.lisory.backend.pedido.dto.OrderResponse;
 import com.lisory.backend.pedido.services.OrderFacade;
+import com.lisory.backend.pedido.services.OrderResponseMapper;
 import com.lisory.backend.pedido.services.OrderService;
+import com.lisory.backend.pedido.entity.Order;
+import com.lisory.backend.pedido.repository.OrderRepository;
+import com.lisory.backend.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,10 +24,15 @@ public class PublicOrderController {
 
     private final OrderService orderService;
     private final OrderFacade orderFacade;
+    private final OrderRepository orderRepository;
+    private final OrderResponseMapper responseMapper;
 
-    public PublicOrderController(OrderService orderService, OrderFacade orderFacade) {
+    public PublicOrderController(OrderService orderService, OrderFacade orderFacade,
+                                  OrderRepository orderRepository, OrderResponseMapper responseMapper) {
         this.orderService = orderService;
         this.orderFacade = orderFacade;
+        this.orderRepository = orderRepository;
+        this.responseMapper = responseMapper;
     }
 
     @PostMapping
@@ -43,7 +52,9 @@ public class PublicOrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable UUID id) {
-        return ResponseEntity.status(404).body(Map.of("error", "Endpoint not available"));
+    public ResponseEntity<OrderResponse> findById(@PathVariable UUID id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        return ResponseEntity.ok(responseMapper.toResponse(order));
     }
 }

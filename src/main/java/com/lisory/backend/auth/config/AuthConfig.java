@@ -45,6 +45,7 @@ public class AuthConfig {
                         .requestMatchers("/cart/**").permitAll()
                         .requestMatchers("/coupons/validate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/orders/public").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/orders/public/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/newsletter").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/shipping/**").permitAll()

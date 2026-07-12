@@ -107,11 +107,7 @@ public class OrderFacade {
 
         cartItemRepository.deleteByCartId(cart.getId());
 
-        try {
-            paymentService.initiatePayment(savedOrder.getId(), request.paymentMethod(), savedOrder.getTotal());
-        } catch (Exception e) {
-            log.error("payment_initiation_failed_for_order_{} - order was created but payment could not be initiated", savedOrder.getId(), e);
-        }
+        paymentService.initiatePayment(savedOrder.getId(), request.paymentMethod(), savedOrder.getTotal());
 
         return responseMapper.toResponse(savedOrder);
     }
