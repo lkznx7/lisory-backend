@@ -582,19 +582,20 @@ Pagamento      Envio
 
 ## 9. Variáveis de Ambiente
 
-Todas as variáveis possuem valores padrão definidos em [`application.properties`](src/main/resources/application.properties). Para ambiente de produção, recomenda-se configurar valores específicos via variáveis de ambiente ou arquivo `.env`.
+As variáveis abaixo refletem os nomes usados no código (`application.properties`) e no ambiente de execução (Docker/Coolify).
 
 | Variável | Obrigatória | Padrão | Descrição |
 |---|---|---|---|
-| `DB_URL` | Não | `jdbc:postgresql://localhost:5432/Lisory` | URL de conexão com o banco PostgreSQL |
-| `DB_USERNAME` | Não | `Lisory` | Usuário do banco de dados |
-| `DB_PASSWORD` | Não | `LisoryTest` | Senha do banco de dados |
-| `JWT_SECRET` | Não | *(valor base64 fixo)* | Chave secreta para assinatura HMAC-SHA dos tokens JWT |
-| `JWT_EXPIRATION` | Não | `86400000` | Tempo de expiração do token JWT em milissegundos (24 horas) |
-| `SHOW_SQL` | Não | `false` | Exibe queries SQL no console (útil para debugging) |
-| `FORMAT_SQL` | Não | `false` | Formata as queries SQL exibidas |
+| `SPRING_DATASOURCE_URL` | Sim | — | URL JDBC do PostgreSQL |
+| `SPRING_DATASOURCE_USERNAME` | Sim | — | Usuário do banco |
+| `SPRING_DATASOURCE_PASSWORD` | Sim | — | Senha do banco |
+| `JWT_SECRET` | Sim | — | Chave para assinatura do JWT |
+| `JWT_EXPIRATION` | Não | `86400000` | Expiração do JWT em ms |
+| `ASAAS_API_KEY` | **Sim** | — | API Key do Asaas |
+| `ASAAS_API_URL` | Não | `https://api-sandbox.asaas.com/v3` | Base URL da API Asaas |
+| `ASAAS_REDIRECT_URL` | Não | `https://lisory.com.br/payment-return` | URL de retorno do fluxo de pagamento |
 
-> ⚠️ **Importante:** A chave `JWT_SECRET` padrão inclusa no código **não deve ser utilizada em produção**. Sempre configure uma chave secreta forte e única via variável de ambiente.
+> ⚠️ **Importante:** `ASAAS_API_KEY` não possui fallback no backend. Se estiver ausente no ambiente do container, a aplicação não inicia.
 
 ---
 
@@ -618,13 +619,13 @@ cd lisory
 # Crie um banco de dados chamado "Lisory"
 psql -U postgres -c "CREATE DATABASE Lisory;"
 
-# 3. (Opcional) Configure variáveis de ambiente
-# Exporte ou crie um arquivo .env com as configurações desejadas
-export DB_URL=jdbc:postgresql://localhost:5432/Lisory
-export DB_USERNAME=seu_usuario
-export DB_PASSWORD=sua_senha
+# 3. Configure variáveis de ambiente
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/lisory
+export SPRING_DATASOURCE_USERNAME=seu_usuario
+export SPRING_DATASOURCE_PASSWORD=sua_senha
 export JWT_SECRET=sua_chave_secreta_base64
 export JWT_EXPIRATION=86400000
+export ASAAS_API_KEY=sua_chave_asaas
 
 # 4. Execute a aplicação com Maven Wrapper
 ./mvnw spring-boot:run
