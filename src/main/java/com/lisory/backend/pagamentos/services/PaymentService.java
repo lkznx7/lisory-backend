@@ -29,7 +29,7 @@ public class PaymentService {
         this.paymentProvider = paymentProvider;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public PaymentResponse initiatePayment(UUID orderId, String paymentMethod, BigDecimal amount) {
         log.info("Initiating payment for order {} with method {} and amount {}", orderId, paymentMethod, amount);
 
