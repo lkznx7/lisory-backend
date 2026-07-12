@@ -77,6 +77,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return "OPTIONS".equals(request.getMethod());
+    }
+
     private String getClientIP(HttpServletRequest request) {
         return request.getRemoteAddr();
     }
