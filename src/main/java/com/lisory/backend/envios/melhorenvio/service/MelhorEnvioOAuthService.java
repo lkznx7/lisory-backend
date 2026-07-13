@@ -67,7 +67,7 @@ public class MelhorEnvioOAuthService {
 
         try {
             ResponseEntity<MelhorEnvioTokenResponse> response = restTemplate.exchange(
-                    properties.apiUrl() + "/auth/token",
+                    properties.apiUrl() + "/oauth/token",
                     HttpMethod.POST,
                     request,
                     MelhorEnvioTokenResponse.class
@@ -125,7 +125,7 @@ public class MelhorEnvioOAuthService {
 
         try {
             ResponseEntity<MelhorEnvioTokenResponse> response = restTemplate.exchange(
-                    properties.apiUrl() + "/auth/token",
+                    properties.apiUrl() + "/oauth/token",
                     HttpMethod.POST,
                     request,
                     MelhorEnvioTokenResponse.class
