@@ -5,6 +5,8 @@ import com.lisory.backend.pagamentos.dto.PaymentResponse;
 import com.lisory.backend.pagamentos.entity.Payment;
 import com.lisory.backend.pagamentos.repository.PaymentRepository;
 import com.lisory.backend.pedido.entity.Order;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentProvider paymentProvider;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     public PaymentService(PaymentRepository paymentRepository, PaymentProvider paymentProvider) {
         this.paymentRepository = paymentRepository;
         this.paymentProvider = paymentProvider;
@@ -34,9 +39,7 @@ public class PaymentService {
         log.info("Initiating payment for order {} with method {} and amount {}", orderId, paymentMethod, amount);
 
         Payment payment = new Payment();
-        Order orderStub = new Order();
-        orderStub.setId(orderId);
-        payment.setOrder(orderStub);
+        payment.setOrder(entityManager.getReference(Order.class, orderId));
         payment.setPaymentMethod(paymentMethod);
         payment.setAmount(amount);
         payment.setStatus("PROCESSING");
@@ -47,12 +50,19 @@ public class PaymentService {
 
         saved.setGatewayId(gatewayResponse.gatewayId());
         saved.setTransactionId(gatewayResponse.transactionId());
+        saved.setGatewayPaymentId(gatewayResponse.gatewayId());
         saved.setStatus(gatewayResponse.status());
         if (gatewayResponse.paymentUrl() != null) {
             saved.setPaymentLink(gatewayResponse.paymentUrl());
         }
-        if (gatewayResponse.slug() != null) {
-            saved.setOrderNSU(gatewayResponse.slug());
+        if (gatewayResponse.qrCode() != null) {
+            saved.setQrCode(gatewayResponse.qrCode());
+        }
+        if (gatewayResponse.pixCopyAndPaste() != null) {
+            saved.setPixCopyAndPaste(gatewayResponse.pixCopyAndPaste());
+        }
+        if (gatewayResponse.transactionReceiptUrl() != null) {
+            saved.setTransactionReceiptUrl(gatewayResponse.transactionReceiptUrl());
         }
         saved = paymentRepository.save(saved);
 
@@ -66,19 +76,13 @@ public class PaymentService {
     public GatewayResponse processOrderPayment(UUID orderId, String paymentMethod, BigDecimal amount) {
         Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
 
-        if (payment != null) {
-            payment.setPaymentMethod(paymentMethod);
-            payment.setAmount(amount);
-            payment.setStatus("PROCESSING");
-        } else {
+        if (payment == null) {
             payment = new Payment();
-            Order orderStub = new Order();
-            orderStub.setId(orderId);
-            payment.setOrder(orderStub);
-            payment.setPaymentMethod(paymentMethod);
-            payment.setAmount(amount);
-            payment.setStatus("PROCESSING");
         }
+        payment.setOrder(entityManager.getReference(Order.class, orderId));
+        payment.setPaymentMethod(paymentMethod);
+        payment.setAmount(amount);
+        payment.setStatus("PROCESSING");
         payment = paymentRepository.save(payment);
 
         PaymentRequest providerRequest = new PaymentRequest(orderId, amount, paymentMethod);
@@ -86,12 +90,22 @@ public class PaymentService {
 
         payment.setGatewayId(gatewayResponse.gatewayId());
         payment.setTransactionId(gatewayResponse.transactionId());
+        payment.setGatewayPaymentId(gatewayResponse.gatewayId());
         payment.setStatus(gatewayResponse.status());
         if (gatewayResponse.paymentUrl() != null) {
             payment.setPaymentLink(gatewayResponse.paymentUrl());
         }
         if (gatewayResponse.slug() != null) {
             payment.setOrderNSU(gatewayResponse.slug());
+        }
+        if (gatewayResponse.qrCode() != null) {
+            payment.setQrCode(gatewayResponse.qrCode());
+        }
+        if (gatewayResponse.pixCopyAndPaste() != null) {
+            payment.setPixCopyAndPaste(gatewayResponse.pixCopyAndPaste());
+        }
+        if (gatewayResponse.transactionReceiptUrl() != null) {
+            payment.setTransactionReceiptUrl(gatewayResponse.transactionReceiptUrl());
         }
         if ("APPROVED".equals(gatewayResponse.status()) || "PAID".equals(gatewayResponse.status())) {
             payment.setPaidAt(LocalDateTime.now());
@@ -122,6 +136,9 @@ public class PaymentService {
                 payment.getOrderNSU(),
                 payment.getTransactionNSU(),
                 payment.getPaymentLink(),
+                payment.getQrCode(),
+                payment.getPixCopyAndPaste(),
+                payment.getTransactionReceiptUrl(),
                 payment.getExpirationDate(),
                 payment.getAuthorizationCode(),
                 payment.getInstallments(),

@@ -82,6 +82,8 @@ public class OrderResponseMapper {
                 payment != null ? payment.getPaymentMethod() : null,
                 payment != null ? payment.getPaymentLink() : null,
                 payment != null ? payment.getPaymentLink() : null,
+                payment != null ? payment.getQrCode() : null,
+                payment != null ? payment.getPixCopyAndPaste() : null,
                 shipment != null ? shipment.getId() : null,
                 shipment != null ? shipment.getStatus() : null,
                 shipment != null ? shipment.getTrackingCode() : null,

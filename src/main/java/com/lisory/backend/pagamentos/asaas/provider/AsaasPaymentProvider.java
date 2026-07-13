@@ -1,6 +1,7 @@
 package com.lisory.backend.pagamentos.asaas.provider;
 
 import com.lisory.backend.config.properties.AsaasProperties;
+import com.lisory.backend.exception.BusinessException;
 import com.lisory.backend.pagamentos.asaas.client.AsaasClient;
 import com.lisory.backend.pagamentos.asaas.dto.AsaasChargeRequest;
 import com.lisory.backend.pagamentos.asaas.dto.AsaasChargeResponse;
@@ -42,9 +43,9 @@ public class AsaasPaymentProvider implements PaymentProvider {
         ));
 
         Order order = orderRepository.findById(request.orderId())
-                .orElseThrow(() -> new RuntimeException("Order not found: " + request.orderId()));
+                .orElseThrow(() -> new BusinessException("Order not found: " + request.orderId()));
 
-        String billingType = "PIX".equalsIgnoreCase(request.paymentMethod()) ? "PIX" : "CREDIT_CARD";
+        String billingType = mapBillingType(request.paymentMethod());
 
         AsaasCustomerResponse customer = findOrCreateCustomer(order);
 
@@ -59,28 +60,42 @@ public class AsaasPaymentProvider implements PaymentProvider {
                 dueDate,
                 "Pedido " + order.getId(),
                 order.getId().toString(),
-                redirectUrl
+                redirectUrl,
+                null,
+                null
         );
 
         AsaasChargeResponse charge = client.createCharge(chargeRequest);
-        if (charge == null || charge.id() == null || charge.id().isBlank()
-                || charge.invoiceUrl() == null || charge.invoiceUrl().isBlank()) {
-            throw new IllegalStateException("Asaas returned a payment without id or invoiceUrl");
+        if (charge == null || charge.id() == null || charge.id().isBlank()) {
+            throw new BusinessException("Asaas returned a payment without id");
         }
 
         log.info("asaas_charge_created", Map.of(
                 "paymentId", charge.id(),
                 "status", charge.status(),
-                "invoiceUrl", charge.invoiceUrl() != null ? "present" : "null"
+                "billingType", charge.billingType() != null ? charge.billingType() : "null"
         ));
 
         return new GatewayResponse(
                 charge.id(),
-                charge.id(),
+                null,
                 mapStatus(charge.status()),
                 charge.invoiceUrl(),
-                charge.id()
+                null,
+                charge.qrCode(),
+                charge.pixCopyAndPaste(),
+                charge.transactionReceiptUrl()
         );
+    }
+
+    private String mapBillingType(String paymentMethod) {
+        if (paymentMethod == null) return "PIX";
+        return switch (paymentMethod.toUpperCase()) {
+            case "PIX" -> "PIX";
+            case "BOLETO", "BOL", "SLIP" -> "BOLETO";
+            case "CREDIT_CARD", "CARTAO", "CARTAO_CREDITO", "CREDIT" -> "CREDIT_CARD";
+            default -> "PIX";
+        };
     }
 
     private AsaasCustomerResponse findOrCreateCustomer(Order order) {
@@ -90,7 +105,7 @@ public class AsaasPaymentProvider implements PaymentProvider {
         String phone = order.getGuestPhone();
 
         if (name == null || email == null) {
-            throw new RuntimeException("Customer name and email are required");
+            throw new BusinessException("Customer name and email are required");
         }
 
         return client.findCustomerByCpfCnpj(cpf).orElseGet(() -> client.createCustomer(new AsaasCustomerRequest(
@@ -105,7 +120,8 @@ public class AsaasPaymentProvider implements PaymentProvider {
             case "RECEIVED", "CONFIRMED" -> "APPROVED";
             case "OVERDUE" -> "EXPIRED";
             case "REFUNDED" -> "REFUNDED";
-            case "CANCELLED" -> "CANCELLED";
+            case "CANCELLED", "DELETED" -> "CANCELLED";
+            case "FAILED" -> "DECLINED";
             default -> "PENDING";
         };
     }

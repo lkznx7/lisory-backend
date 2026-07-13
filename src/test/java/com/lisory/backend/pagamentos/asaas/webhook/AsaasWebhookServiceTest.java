@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,8 +65,9 @@ class AsaasWebhookServiceTest {
                 "PAYMENT_RECEIVED",
                 new AsaasWebhookEvent.PaymentData(
                         "pay_abc123", "RECEIVED", orderId.toString(),
-                        150.0, 142.5, "PIX",
-                        "https://pay.asaas.com/invoice/abc", "12345"
+                        new BigDecimal("150.00"), new BigDecimal("142.50"), "PIX",
+                        "https://pay.asaas.com/invoice/abc", "12345",
+                        null, null, null
                 )
         );
 
@@ -94,7 +96,8 @@ class AsaasWebhookServiceTest {
                 "PAYMENT_RECEIVED",
                 new AsaasWebhookEvent.PaymentData(
                         "pay_abc123", "RECEIVED", orderId.toString(),
-                        150.0, 142.5, "PIX", null, null
+                        new BigDecimal("150.00"), new BigDecimal("142.50"), "PIX", null, null,
+                        null, null, null
                 )
         );
 
@@ -110,7 +113,8 @@ class AsaasWebhookServiceTest {
                 "PAYMENT_RECEIVED",
                 new AsaasWebhookEvent.PaymentData(
                         "pay_abc123", "RECEIVED", null,
-                        150.0, 142.5, "PIX", null, null
+                        new BigDecimal("150.00"), new BigDecimal("142.50"), "PIX", null, null,
+                        null, null, null
                 )
         );
 
@@ -128,7 +132,8 @@ class AsaasWebhookServiceTest {
                 "PAYMENT_RECEIVED",
                 new AsaasWebhookEvent.PaymentData(
                         "pay_abc123", "RECEIVED", orderId.toString(),
-                        150.0, 142.5, "PIX", null, null
+                        new BigDecimal("150.00"), new BigDecimal("142.50"), "PIX", null, null,
+                        null, null, null
                 )
         );
 

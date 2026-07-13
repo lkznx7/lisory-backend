@@ -29,6 +29,8 @@ public record OrderResponse(
         String paymentMethod,
         String paymentLink,
         String invoiceUrl,
+        String qrCode,
+        String pixCopyAndPaste,
         UUID shipmentId,
         String shipmentStatus,
         String trackingCode,

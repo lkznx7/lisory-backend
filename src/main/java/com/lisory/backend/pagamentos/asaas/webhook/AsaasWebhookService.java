@@ -54,7 +54,10 @@ public class AsaasWebhookService {
         }
 
         String newStatus = mapWebhookEventToStatus(event.event());
-        if (newStatus == null) return;
+        if (newStatus == null) {
+            log.info("asaas_webhook_event_ignored", Map.of("event", event.event()));
+            return;
+        }
 
         if ("APPROVED".equals(payment.getStatus())) {
             log.info("asaas_webhook_already_approved", Map.of("orderId", orderId.toString()));
@@ -63,7 +66,21 @@ public class AsaasWebhookService {
 
         payment.setStatus(newStatus);
         payment.setGatewayPaymentId(event.payment().id());
-        if ("APPROVED".equals(newStatus) || "PAID".equals(newStatus)) {
+
+        if (event.payment().invoiceUrl() != null) {
+            payment.setPaymentLink(event.payment().invoiceUrl());
+        }
+        if (event.payment().qrCode() != null) {
+            payment.setQrCode(event.payment().qrCode());
+        }
+        if (event.payment().pixCopyAndPaste() != null) {
+            payment.setPixCopyAndPaste(event.payment().pixCopyAndPaste());
+        }
+        if (event.payment().transactionReceiptUrl() != null) {
+            payment.setTransactionReceiptUrl(event.payment().transactionReceiptUrl());
+        }
+
+        if ("APPROVED".equals(newStatus)) {
             payment.setPaidAt(LocalDateTime.now());
         }
         paymentRepository.save(payment);
@@ -80,6 +97,20 @@ public class AsaasWebhookService {
             }
         }
 
+        if ("CANCELLED".equals(newStatus)) {
+            Order order = orderRepository.findById(orderId).orElse(null);
+            if (order != null) {
+                OrderStatus currentOrderStatus = OrderStatus.valueOf(order.getStatus());
+                if (currentOrderStatus == OrderStatus.PENDING_PAYMENT) {
+                    order.setStatus(OrderStatus.CANCELADO.name());
+                    orderRepository.save(order);
+                    log.info("asaas_webhook_order_cancelled", Map.of(
+                            "orderId", orderId.toString()
+                    ));
+                }
+            }
+        }
+
         log.info("asaas_webhook_processed", Map.of(
                 "orderId", orderId.toString(),
                 "paymentStatus", newStatus
@@ -92,7 +123,9 @@ public class AsaasWebhookService {
             case "PAYMENT_RECEIVED", "PAYMENT_CONFIRMED" -> "APPROVED";
             case "PAYMENT_CREATED" -> "PENDING";
             case "PAYMENT_OVERDUE" -> "EXPIRED";
-            case "PAYMENT_DELETED", "PAYMENT_REFUNDED" -> "REFUNDED";
+            case "PAYMENT_REFUNDED" -> "REFUNDED";
+            case "PAYMENT_DELETED" -> "CANCELLED";
+            case "PAYMENT_FAILED" -> "DECLINED";
             default -> null;
         };
     }

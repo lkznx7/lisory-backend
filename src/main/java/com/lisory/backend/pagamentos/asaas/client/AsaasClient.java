@@ -8,16 +8,16 @@ import com.lisory.backend.pagamentos.asaas.dto.AsaasCustomerRequest;
 import com.lisory.backend.pagamentos.asaas.dto.AsaasCustomerResponse;
 import com.lisory.backend.pagamentos.asaas.exception.AsaasException;
 import com.lisory.backend.shared.log.StructuredLogger;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,28 +30,19 @@ public class AsaasClient {
     private final RestClient restClient;
     private final AsaasProperties properties;
 
-    public AsaasClient(RestClient.Builder restClientBuilder, AsaasProperties properties, Environment environment) {
+    public AsaasClient(RestClient.Builder restClientBuilder, AsaasProperties properties) {
         this.properties = properties;
-        String apiKey = properties.apiKey();
-        String envVarValue = System.getenv("ASAAS_API_KEY");
-        String envPropertyValue = environment.getProperty("ASAAS_API_KEY");
-        String boundPropertyValue = environment.getProperty("asaas.api-key");
-
-        log.info("asaas_config_probe", Map.of(
-                "apiKeyBound", String.valueOf(apiKey != null && !apiKey.isBlank()),
-                "apiKeyLength", String.valueOf(apiKey == null ? 0 : apiKey.length()),
-                "envVarPresent", String.valueOf(envVarValue != null && !envVarValue.isBlank()),
-                "envVarLength", String.valueOf(envVarValue == null ? 0 : envVarValue.length()),
-                "environmentAsaasApiKeyPresent", String.valueOf(envPropertyValue != null && !envPropertyValue.isBlank()),
-                "environmentAsaasApiKeyLength", String.valueOf(envPropertyValue == null ? 0 : envPropertyValue.length()),
-                "boundPropertyPresent", String.valueOf(boundPropertyValue != null && !boundPropertyValue.isBlank()),
-                "boundPropertyLength", String.valueOf(boundPropertyValue == null ? 0 : boundPropertyValue.length())
-        ));
 
         if (properties.apiKey() == null || properties.apiKey().isBlank()) {
             throw new IllegalStateException("ASAAS_API_KEY must be configured");
         }
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(10));
+        requestFactory.setReadTimeout(Duration.ofSeconds(30));
+
         this.restClient = restClientBuilder
+                .requestFactory(requestFactory)
                 .baseUrl(properties.apiUrl())
                 .defaultHeader("access_token", properties.apiKey())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -59,6 +50,10 @@ public class AsaasClient {
                 .defaultHeader(HttpHeaders.USER_AGENT, "Lisory/1.0")
                 .build();
 
+        log.info("asaas_client_initialized", Map.of(
+                "apiUrl", properties.apiUrl(),
+                "hasApiKey", "true"
+        ));
     }
 
     public AsaasCustomerResponse createCustomer(AsaasCustomerRequest request) {
@@ -68,7 +63,7 @@ public class AsaasClient {
                 .uri("/customers")
                 .body(request)
                 .retrieve()
-                .onStatus(status -> status.isError(), (request2, response) -> {
+                .onStatus(status -> status.isError(), (req, response) -> {
                     String body = readBody(response);
                     log.error("asaas_create_customer_error", Map.of(
                             "status", String.valueOf(response.getStatusCode().value()),
@@ -87,9 +82,12 @@ public class AsaasClient {
         AsaasCustomerListResponse result = restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/customers").queryParam("cpfCnpj", cpfCnpj).build())
                 .retrieve()
-                .onStatus(status -> status.isError(), (request, response) -> {
+                .onStatus(status -> status.isError(), (req, response) -> {
                     String body = readBody(response);
-                    log.error("asaas_find_customer_error", Map.of("status", String.valueOf(response.getStatusCode().value()), "body", body));
+                    log.error("asaas_find_customer_error", Map.of(
+                            "status", String.valueOf(response.getStatusCode().value()),
+                            "body", body
+                    ));
                     throw asaasError("looking up customer", response.getStatusCode().value(), body);
                 })
                 .body(AsaasCustomerListResponse.class);
@@ -107,7 +105,7 @@ public class AsaasClient {
                 .uri("/payments")
                 .body(request)
                 .retrieve()
-                .onStatus(status -> status.isError(), (request2, response) -> {
+                .onStatus(status -> status.isError(), (req, response) -> {
                     String body = readBody(response);
                     log.error("asaas_create_charge_error", Map.of(
                             "status", String.valueOf(response.getStatusCode().value()),
@@ -122,7 +120,7 @@ public class AsaasClient {
         return restClient.get()
                 .uri("/payments/{id}", paymentId)
                 .retrieve()
-                .onStatus(status -> status.isError(), (request2, response) -> {
+                .onStatus(status -> status.isError(), (req, response) -> {
                     String body = readBody(response);
                     log.error("asaas_get_charge_error", Map.of(
                             "paymentId", paymentId,
@@ -134,7 +132,25 @@ public class AsaasClient {
                 .body(AsaasChargeResponse.class);
     }
 
-    private String readBody(ClientHttpResponse response) {
+    public void cancelCharge(String paymentId) {
+        log.info("asaas_cancel_charge", Map.of("paymentId", paymentId));
+
+        restClient.post()
+                .uri("/payments/{id}/cancel", paymentId)
+                .retrieve()
+                .onStatus(status -> status.isError(), (req, response) -> {
+                    String body = readBody(response);
+                    log.error("asaas_cancel_charge_error", Map.of(
+                            "paymentId", paymentId,
+                            "status", String.valueOf(response.getStatusCode().value()),
+                            "body", body
+                    ));
+                    throw asaasError("cancelling payment", response.getStatusCode().value(), body);
+                })
+                .body(Void.class);
+    }
+
+    private String readBody(org.springframework.http.client.ClientHttpResponse response) {
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
             return reader.lines().collect(Collectors.joining("\n"));
@@ -144,7 +160,7 @@ public class AsaasClient {
     }
 
     private AsaasException asaasError(String operation, int status, String body) {
-        return new AsaasException("Asaas could not complete " + operation + " (HTTP " + status + ")");
+        return new AsaasException(operation, status, body);
     }
 
 }

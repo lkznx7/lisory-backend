@@ -47,6 +47,15 @@ public class Payment {
     @Column(name = "payment_link", length = 2048)
     private String paymentLink;
 
+    @Column(name = "qr_code", length = 8192)
+    private String qrCode;
+
+    @Column(name = "pix_copy_and_paste", length = 8192)
+    private String pixCopyAndPaste;
+
+    @Column(name = "transaction_receipt_url", length = 2048)
+    private String transactionReceiptUrl;
+
     @Column(name = "expiration_date")
     private LocalDateTime expirationDate;
 
@@ -102,6 +111,12 @@ public class Payment {
     public void setTransactionNSU(String transactionNSU) { this.transactionNSU = transactionNSU; }
     public String getPaymentLink() { return paymentLink; }
     public void setPaymentLink(String paymentLink) { this.paymentLink = paymentLink; }
+    public String getQrCode() { return qrCode; }
+    public void setQrCode(String qrCode) { this.qrCode = qrCode; }
+    public String getPixCopyAndPaste() { return pixCopyAndPaste; }
+    public void setPixCopyAndPaste(String pixCopyAndPaste) { this.pixCopyAndPaste = pixCopyAndPaste; }
+    public String getTransactionReceiptUrl() { return transactionReceiptUrl; }
+    public void setTransactionReceiptUrl(String transactionReceiptUrl) { this.transactionReceiptUrl = transactionReceiptUrl; }
     public LocalDateTime getExpirationDate() { return expirationDate; }
     public void setExpirationDate(LocalDateTime expirationDate) { this.expirationDate = expirationDate; }
     public String getAuthorizationCode() { return authorizationCode; }

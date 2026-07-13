@@ -21,7 +21,7 @@ public class AsaasWebhookController {
     }
 
     @PostMapping("/asaas")
-    public ResponseEntity<Void> handleAsaasWebhook(@RequestBody AsaasWebhookEvent event) {
+    public ResponseEntity<Map<String, String>> handleAsaasWebhook(@RequestBody AsaasWebhookEvent event) {
         logger.info("webhook_received", Map.of("gateway", "asaas", "event", event.event()));
 
         try {
@@ -32,8 +32,8 @@ public class AsaasWebhookController {
             ));
         } catch (Exception e) {
             logger.error("webhook_processing_error", Map.of("gateway", "asaas"), e);
-            return ResponseEntity.status(500).build();
         }
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok(Map.of("status", "ok"));
     }
 }

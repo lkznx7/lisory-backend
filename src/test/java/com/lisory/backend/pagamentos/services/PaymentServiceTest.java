@@ -4,6 +4,7 @@ import com.lisory.backend.exception.ResourceNotFoundException;
 import com.lisory.backend.pagamentos.dto.PaymentResponse;
 import com.lisory.backend.pagamentos.entity.Payment;
 import com.lisory.backend.pagamentos.repository.PaymentRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,6 +21,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +34,9 @@ class PaymentServiceTest {
     @Mock
     private PaymentProvider paymentProvider;
 
+    @Mock
+    private EntityManager entityManager;
+
     @InjectMocks
     private PaymentService paymentService;
 
@@ -41,11 +47,16 @@ class PaymentServiceTest {
     void setUp() {
         orderId = UUID.randomUUID();
         paymentId = UUID.randomUUID();
+        ReflectionTestUtils.setField(paymentService, "entityManager", entityManager);
     }
 
     @Test
     @DisplayName("should initiate payment and create payment link")
     void shouldInitiatePayment() {
+        com.lisory.backend.pedido.entity.Order orderStub = new com.lisory.backend.pedido.entity.Order();
+        orderStub.setId(orderId);
+        when(entityManager.getReference(eq(com.lisory.backend.pedido.entity.Order.class), eq(orderId))).thenReturn(orderStub);
+
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> {
             Payment payment = invocation.getArgument(0);
             payment.setId(paymentId);
@@ -53,7 +64,7 @@ class PaymentServiceTest {
         });
 
         GatewayResponse gatewayResponse = new GatewayResponse(
-                orderId.toString(), orderId.toString(), "PENDING",
+                orderId.toString(), null, "PENDING",
                 "https://pay.asaas.com/test?invoice=abc123");
         when(paymentProvider.processPayment(any())).thenReturn(gatewayResponse);
 
@@ -72,6 +83,10 @@ class PaymentServiceTest {
     @Test
     @DisplayName("should process payment successfully")
     void shouldProcessPayment() {
+        com.lisory.backend.pedido.entity.Order orderStub = new com.lisory.backend.pedido.entity.Order();
+        orderStub.setId(orderId);
+        when(entityManager.getReference(eq(com.lisory.backend.pedido.entity.Order.class), eq(orderId))).thenReturn(orderStub);
+
         Payment existingPayment = new Payment();
         existingPayment.setId(paymentId);
         com.lisory.backend.pedido.entity.Order order = new com.lisory.backend.pedido.entity.Order();
@@ -85,7 +100,7 @@ class PaymentServiceTest {
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
 
         GatewayResponse gatewayResponse = new GatewayResponse(
-                "gw-123", "tx-456", "APPROVED", null);
+                "gw-123", null, "APPROVED", null);
         when(paymentProvider.processPayment(any())).thenReturn(gatewayResponse);
 
         GatewayResponse result = paymentService.processOrderPayment(orderId, "PIX", new BigDecimal("149.00"));
