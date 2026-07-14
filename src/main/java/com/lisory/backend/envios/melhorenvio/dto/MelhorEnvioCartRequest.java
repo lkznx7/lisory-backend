@@ -39,7 +39,7 @@ public record MelhorEnvioCartRequest(
         @JsonProperty("height") int height,
         @JsonProperty("width") int width,
         @JsonProperty("length") int length,
-        @JsonProperty("weight") int weight
+        @JsonProperty("weight") double weight
     ) {}
 
     public record CartOptions(

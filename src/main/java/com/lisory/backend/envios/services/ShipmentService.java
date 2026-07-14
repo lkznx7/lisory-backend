@@ -81,6 +81,7 @@ public class ShipmentService {
                 shipment.getLabelUrl(),
                 shipment.getTrackingUrl(),
                 shipment.getMelhorEnvioId(),
+                shipment.getProtocol(),
                 shipment.getCarrierCode(),
                 shipment.getServiceCode(),
                 shipment.getEstimatedDelivery(),

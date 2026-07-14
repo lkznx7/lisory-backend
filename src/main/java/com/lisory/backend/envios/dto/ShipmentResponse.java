@@ -15,6 +15,7 @@ public record ShipmentResponse(
         String labelUrl,
         String trackingUrl,
         String melhorEnvioId,
+        String protocol,
         String carrierCode,
         String serviceCode,
         LocalDateTime estimatedDelivery,

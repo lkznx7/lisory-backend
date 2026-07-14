@@ -1,5 +1,6 @@
 package com.lisory.backend.pagamentos.asaas.webhook;
 
+import com.lisory.backend.envios.melhorenvio.service.MelhorEnvioShipmentService;
 import com.lisory.backend.pagamentos.asaas.dto.AsaasWebhookEvent;
 import com.lisory.backend.pagamentos.entity.Payment;
 import com.lisory.backend.pagamentos.repository.PaymentRepository;
@@ -21,10 +22,13 @@ public class AsaasWebhookService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final MelhorEnvioShipmentService melhorEnvioShipmentService;
 
-    public AsaasWebhookService(PaymentRepository paymentRepository, OrderRepository orderRepository) {
+    public AsaasWebhookService(PaymentRepository paymentRepository, OrderRepository orderRepository,
+                               MelhorEnvioShipmentService melhorEnvioShipmentService) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
+        this.melhorEnvioShipmentService = melhorEnvioShipmentService;
     }
 
     @Transactional
@@ -94,6 +98,13 @@ public class AsaasWebhookService {
                         "orderId", orderId.toString(),
                         "newStatus", OrderStatus.PAGO.name()
                 ));
+
+                try {
+                    melhorEnvioShipmentService.generateShipment(orderId);
+                } catch (Exception e) {
+                    log.error("asaas_webhook_shipment_generation_failed",
+                            Map.of("orderId", orderId.toString(), "error", e.getMessage()));
+                }
             }
         }
 

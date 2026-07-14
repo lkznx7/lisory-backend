@@ -38,6 +38,9 @@ public class Shipment {
     @Column(name = "melhor_envio_id", length = 255)
     private String melhorEnvioId;
 
+    @Column(length = 255)
+    private String protocol;
+
     @Column(name = "tracking_url", length = 2048)
     private String trackingUrl;
 
@@ -96,6 +99,8 @@ public class Shipment {
     public void setLabelUrl(String labelUrl) { this.labelUrl = labelUrl; }
     public String getMelhorEnvioId() { return melhorEnvioId; }
     public void setMelhorEnvioId(String melhorEnvioId) { this.melhorEnvioId = melhorEnvioId; }
+    public String getProtocol() { return protocol; }
+    public void setProtocol(String protocol) { this.protocol = protocol; }
     public String getTrackingUrl() { return trackingUrl; }
     public void setTrackingUrl(String trackingUrl) { this.trackingUrl = trackingUrl; }
     public String getCarrierCode() { return carrierCode; }

@@ -81,7 +81,7 @@ public class OrderFacade {
             throw new BusinessException("Cart is empty");
         }
 
-        Address address = resolveAddress(request.addressId());
+        Address address = resolveAddress(request.addressId(), request);
         BigDecimal subtotal = calculateSubtotal(cart);
 
         BigDecimal discount = BigDecimal.ZERO;
@@ -149,10 +149,24 @@ public class OrderFacade {
         throw new BusinessException("Cart not found");
     }
 
-    private Address resolveAddress(UUID addressId) {
-        if (addressId == null) return null;
-        return addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
+    private Address resolveAddress(UUID addressId, OrderRequest request) {
+        if (addressId != null) {
+            return addressRepository.findById(addressId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
+        }
+        if (request.street() != null && request.zipCode() != null) {
+            Address addr = new Address();
+            addr.setStreet(request.street());
+            addr.setNumber(request.number());
+            addr.setComplement(request.complement());
+            addr.setNeighborhood(request.neighborhood());
+            addr.setCity(request.city());
+            addr.setState(request.state());
+            addr.setZipCode(request.zipCode());
+            addr.setCountry("BR");
+            return addressRepository.save(addr);
+        }
+        return null;
     }
 
     private BigDecimal calculateSubtotal(Cart cart) {

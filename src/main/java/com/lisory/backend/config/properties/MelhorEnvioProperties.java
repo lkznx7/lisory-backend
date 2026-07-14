@@ -10,5 +10,17 @@ public record MelhorEnvioProperties(
     String userAgent,
     String callbackUrl,
     String scopes,
-    String originCep
+    String originCep,
+    String storeName,
+    String storePhone,
+    String storeDocument,
+    String storeEmail,
+    String storeAddress,
+    String storeNumber,
+    String storeComplement,
+    String storeNeighborhood,
+    String storeCity,
+    String storeState,
+    String storeStateRegister,
+    String storeCnae
 ) {}
