@@ -60,9 +60,9 @@ public class PublicProductController {
         return ResponseEntity.ok(productService.findBySlug(slug));
     }
 
-    @GetMapping("/{id}/related")
-    public ResponseEntity<List<ProductResponse>> findRelated(@PathVariable UUID id,
+    @GetMapping("/{slug}/related")
+    public ResponseEntity<List<ProductResponse>> findRelated(@PathVariable String slug,
                                                              @RequestParam(defaultValue = "6") int limit) {
-        return ResponseEntity.ok(productService.findRelated(id, limit));
+        return ResponseEntity.ok(productService.findRelated(slug, limit));
     }
 }

@@ -176,9 +176,9 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> findRelated(UUID productId, int limit) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
+    public List<ProductResponse> findRelated(String slug, int limit) {
+        Product product = productRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
 
         if (product.getCategory() == null) {
             return List.of();
@@ -186,7 +186,7 @@ public class ProductService {
 
         return productRepository.findByCategoryIdAndActiveTrue(product.getCategory().getId(), PageRequest.of(0, limit))
                 .stream()
-                .filter(p -> !p.getId().equals(productId))
+                .filter(p -> !p.getId().equals(product.getId()))
                 .map(this::toResponse)
                 .toList();
     }
