@@ -176,9 +176,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> findRelated(String slug, int limit) {
-        Product product = productRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
+    public List<ProductResponse> findRelated(String identifier, int limit) {
+        Product product = findProductByIdentifier(identifier);
 
         if (product.getCategory() == null) {
             return List.of();
@@ -189,6 +188,17 @@ public class ProductService {
                 .filter(p -> !p.getId().equals(product.getId()))
                 .map(this::toResponse)
                 .toList();
+    }
+
+    private Product findProductByIdentifier(String identifier) {
+        try {
+            UUID uuid = UUID.fromString(identifier);
+            return productRepository.findById(uuid)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "id", identifier));
+        } catch (IllegalArgumentException e) {
+            return productRepository.findBySlug(identifier)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", identifier));
+        }
     }
 
     @Transactional(readOnly = true)
