@@ -62,16 +62,16 @@ public class MelhorEnvioShippingService {
                 null
         );
 
-        MelhorEnvioCalculateResponse response = client.calculateShipping(request);
+        List<MelhorEnvioCalculateResponse> responseList = client.calculateShipping(request);
 
-        if (response == null || response.options() == null) {
+        if (responseList == null || responseList.isEmpty()) {
             log.warn("No shipping options returned from Melhor Envio");
             return List.of();
         }
 
         List<ShippingQuote> quotes = new ArrayList<>();
 
-        for (MelhorEnvioCalculateResponse.ShippingOption option : response.options()) {
+        for (MelhorEnvioCalculateResponse option : responseList) {
             if (option.error() != null && !option.error().isBlank()) {
                 log.warn("Shipping option {} has error: {}", option.name(), option.error());
                 continue;
@@ -80,10 +80,6 @@ public class MelhorEnvioShippingService {
             int estimatedDays = 0;
             if (option.deliveryRange() != null) {
                 estimatedDays = option.deliveryRange().max();
-            } else if (option.days() != null) {
-                try {
-                    estimatedDays = Integer.parseInt(option.days());
-                } catch (NumberFormatException ignored) {}
             }
 
             String companyName = option.company() != null ? option.company().name() : "Unknown";

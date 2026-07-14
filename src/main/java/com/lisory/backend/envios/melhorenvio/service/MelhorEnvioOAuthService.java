@@ -23,6 +23,11 @@ public class MelhorEnvioOAuthService {
 
     private static final Logger log = LoggerFactory.getLogger(MelhorEnvioOAuthService.class);
 
+    // TEMPORÁRIO - TESTES MELHOR ENVIO
+    // REMOVER ANTES DE PRODUÇÃO
+    private static final String HARDCODED_ACCESS_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiMTE2ZWNjNDc0YjI5MWY5MjhhMGQ0NTk3OTEwZjM3OTdiMDkyYTYzYTU4Y2Y3N2Y4MGNkMmU4MjgwZjFlMjZiMGFiYzNkMGU5NzcxNzA3MDQiLCJpYXQiOjE3ODQwMzE3MDQuMDM5NjQ0LCJuYmYiOjE3ODQwMzE3MDQuMDM5NjQ2LCJleHAiOjE4MTU1Njc3MDQuMDIzMzEsInN1YiI6ImJjYTgwODA3LTExZmItNDFjNC1iZTU5LThmNjVjMDVmODNhMSIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIiwiY29tcGFuaWVzLXJlYWQiLCJjb21wYW5pZXMtd3JpdGUiLCJjb3Vwb25zLXJlYWQiLCJjb3Vwb25zLXdyaXRlIiwibm90aWZpY2F0aW9ucy1yZWFkIiwib3JkZXJzLXJlYWQiLCJwcm9kdWN0cy1yZWFkIiwicHJvZHVjdHMtZGVzdHJveSIsInByb2R1Y3RzLXdyaXRlIiwicHVyY2hhc2VzLXJlYWQiLCJzaGlwcGluZy1jYWxjdWxhdGUiLCJzaGlwcGluZy1jYW5jZWwiLCJzaGlwcGluZy1jaGVja291dCIsInNoaXBwaW5nLWNvbXBhbmllcyIsInNoaXBwaW5nLWdlbmVyYXRlIiwic2hpcHBpbmctcHJldmlldyIsInNoaXBwaW5nLXByaW50Iiwic2hpcHBpbmctc2hhcmUiLCJzaGlwcGluZy10cmFja2luZyIsImVjb21tZXJjZS1zaGlwcGluZyIsInRyYW5zYWN0aW9ucy1yZWFkIiwidXNlcnMtcmVhZCIsInVzZXJzLXdyaXRlIiwid2ViaG9va3MtcmVhZCIsIndlYmhvb2tzLXdyaXRlIiwid2ViaG9va3MtZGVsZXRlIiwidGRlYWxlci13ZWJob29rIl19.OTeWUQXnFsPby887Ugz8j0H9wMIiaGWu9itU1OJ8gxAqMs9up1UsOjisOqnNkrwQaUAtysQkAUZqVY_z_a-L2pd8XLgj8m7RyL-wvyOoK8uLJvsGnzxARy52Xq88WED2MRa8S_nRMDX_Eb7AreqjEk3jhD3z79KjuNRPkEpsqse9reMkYAAx4-lfzi8mSsPI4tYE09rDpCIozmqEgwkXm_1lTMHMBT7gWPBiRSqyew_cSGIcuNJOGWJTAKXSWR-jp-XerPGIoDyRyNRC_-2FgY3psr_dz8OtXul72FUhGv0RMr6zNPr_OD_eQkK80Qyi82ktakcYQrRArimBGXRBTssyJ7lrrY4EK3RLLy6GQms1cZdCbglh52XZBWIvdc2g7a6qXT89fX2kNGeiEHbLm0GfzVU0xT4SmFiW-OKOWxNaQcdDLc3HyRO42ZnbO5kefbdZ1jD_aUtMI1sqj8UZKvU0gCDNNEZC5MD7Xwq-aN4vhXgPYSDNDXMiKDfuaONaeSATeOMG0qNN9hfmbjdEq81h4ZwYg0w-lLkVppICXlnX4tBX1Oe506PvbAf4_lgy4OrAoBIpZLsBnMAslIcb-a-aoc0bDMuCC2q8u_emWvJzNywh5MBoDRU4mCXgjG-vmKpOpBcTCx6MVZA9qcEWQmJmeOq6ZUwTxZimkjk2XXw";
+    // FIM TEMPORÁRIO
+
     private final RestTemplate restTemplate;
     private final MelhorEnvioProperties properties;
     private final MelhorEnvioCredentialRepository credentialRepository;
@@ -94,13 +99,11 @@ public class MelhorEnvioOAuthService {
     }
 
     public synchronized String getAccessToken() {
-        MelhorEnvioCredential credential = loadCredential();
-        if (credential == null || !isTokenValid(credential)) {
-            log.info("Access token is missing or expired, refreshing...");
-            refreshToken();
-            credential = loadCredential();
-        }
-        return credential != null ? credential.getAccessToken() : null;
+        // TEMPORÁRIO - TESTES MELHOR ENVIO
+        // REMOVER ANTES DE PRODUÇÃO
+        log.debug("Using hardcoded access token for testing");
+        return HARDCODED_ACCESS_TOKEN;
+        // FIM TEMPORÁRIO
     }
 
     public synchronized void refreshToken() {
@@ -151,20 +154,30 @@ public class MelhorEnvioOAuthService {
     }
 
     public boolean isTokenValid() {
-        MelhorEnvioCredential credential = loadCredential();
-        return credential != null && isTokenValid(credential);
+        // TEMPORÁRIO - TESTES MELHOR ENVIO
+        // REMOVER ANTES DE PRODUÇÃO
+        log.debug("Hardcoded token considered valid for testing");
+        return true;
+        // FIM TEMPORÁRIO
     }
 
+    // TEMPORÁRIO - TESTES MELHOR ENVIO
+    // REMOVER ANTES DE PRODUÇÃO
+    @SuppressWarnings("unused")
+    // FIM TEMPORÁRIO
     private boolean isTokenValid(MelhorEnvioCredential credential) {
-        return credential.getAccessToken() != null
-                && !credential.getAccessToken().isBlank()
-                && credential.getTokenExpiresAt() != null
-                && Instant.now().isBefore(credential.getTokenExpiresAt());
+        // TEMPORÁRIO - TESTES MELHOR ENVIO
+        // REMOVER ANTES DE PRODUÇÃO
+        return true;
+        // FIM TEMPORÁRIO
     }
 
     public boolean hasTokens() {
-        MelhorEnvioCredential credential = loadCredential();
-        return credential != null && credential.getRefreshToken() != null && !credential.getRefreshToken().isBlank();
+        // TEMPORÁRIO - TESTES MELHOR ENVIO
+        // REMOVER ANTES DE PRODUÇÃO
+        log.debug("Hardcoded token available for testing");
+        return true;
+        // FIM TEMPORÁRIO
     }
 
     @Scheduled(fixedDelayString = "${melhor-envio.token-refresh-interval:1800000}")

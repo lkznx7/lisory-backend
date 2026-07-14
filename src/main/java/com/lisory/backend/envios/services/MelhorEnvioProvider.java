@@ -48,14 +48,14 @@ public final class MelhorEnvioProvider implements ShippingProvider {
                     null
             );
 
-            MelhorEnvioCalculateResponse response = melhorEnvioClient.calculateShipping(apiRequest);
+            List<MelhorEnvioCalculateResponse> response = melhorEnvioClient.calculateShipping(apiRequest);
 
-            if (response == null || response.options() == null || response.options().isEmpty()) {
+            if (response == null || response.isEmpty()) {
                 log.warn("melhor_envio_no_options_found for destCep={}, falling back", destCep);
                 return fallback();
             }
 
-            List<MelhorEnvioCalculateResponse.ShippingOption> validOptions = response.options().stream()
+            List<MelhorEnvioCalculateResponse> validOptions = response.stream()
                     .filter(o -> o.error() == null || o.error().isBlank())
                     .toList();
 
@@ -64,7 +64,7 @@ public final class MelhorEnvioProvider implements ShippingProvider {
                 return fallback();
             }
 
-            MelhorEnvioCalculateResponse.ShippingOption cheapest = validOptions.stream()
+            MelhorEnvioCalculateResponse cheapest = validOptions.stream()
                     .min(Comparator.comparing(o -> new BigDecimal(o.price())))
                     .orElse(null);
 

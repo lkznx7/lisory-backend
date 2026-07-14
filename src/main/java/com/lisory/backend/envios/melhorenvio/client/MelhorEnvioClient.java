@@ -14,14 +14,37 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+// TEMPORÁRIO - TESTES MELHOR ENVIO
+// REMOVER ANTES DE PRODUÇÃO
+// Todas as URLs, token e headers estão hardcoded para isolar o teste de integração.
 @Component
 public class MelhorEnvioClient {
 
     private static final Logger log = LoggerFactory.getLogger(MelhorEnvioClient.class);
 
+    // TEMPORÁRIO - TESTES MELHOR ENVIO
+    // REMOVER ANTES DE PRODUÇÃO
+    private static final String BASE_URL = "https://melhorenvio.com.br";
+    private static final String ACCESS_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiMTE2ZWNjNDc0YjI5MWY5MjhhMGQ0NTk3OTEwZjM3OTdiMDkyYTYzYTU4Y2Y3N2Y4MGNkMmU4MjgwZjFlMjZiMGFiYzNkMGU5NzcxNzA3MDQiLCJpYXQiOjE3ODQwMzE3MDQuMDM5NjQ0LCJuYmYiOjE3ODQwMzE3MDQuMDM5NjQ2LCJleHAiOjE4MTU1Njc3MDQuMDIzMzEsInN1YiI6ImJjYTgwODA3LTExZmItNDFjNC1iZTU5LThmNjVjMDVmODNhMSIsInNjb3BlcyI6WyJjYXJ0LXJlYWQiLCJjYXJ0LXdyaXRlIiwiY29tcGFuaWVzLXJlYWQiLCJjb21wYW5pZXMtd3JpdGUiLCJjb3Vwb25zLXJlYWQiLCJjb3Vwb25zLXdyaXRlIiwibm90aWZpY2F0aW9ucy1yZWFkIiwib3JkZXJzLXJlYWQiLCJwcm9kdWN0cy1yZWFkIiwicHJvZHVjdHMtZGVzdHJveSIsInByb2R1Y3RzLXdyaXRlIiwicHVyY2hhc2VzLXJlYWQiLCJzaGlwcGluZy1jYWxjdWxhdGUiLCJzaGlwcGluZy1jYW5jZWwiLCJzaGlwcGluZy1jaGVja291dCIsInNoaXBwaW5nLWNvbXBhbmllcyIsInNoaXBwaW5nLWdlbmVyYXRlIiwic2hpcHBpbmctcHJldmlldyIsInNoaXBwaW5nLXByaW50Iiwic2hpcHBpbmctc2hhcmUiLCJzaGlwcGluZy10cmFja2luZyIsImVjb21tZXJjZS1zaGlwcGluZyIsInRyYW5zYWN0aW9ucy1yZWFkIiwidXNlcnMtcmVhZCIsInVzZXJzLXdyaXRlIiwid2ViaG9va3MtcmVhZCIsIndlYmhvb2tzLXdyaXRlIiwid2ViaG9va3MtZGVsZXRlIiwidGRlYWxlci13ZWJob29rIl19.OTeWUQXnFsPby887Ugz8j0H9wMIiaGWu9itU1OJ8gxAqMs9up1UsOjisOqnNkrwQaUAtysQkAUZqVY_z_a-L2pd8XLgj8m7RyL-wvyOoK8uLJvsGnzxARy52Xq88WED2MRa8S_nRMDX_Eb7AreqjEk3jhD3z79KjuNRPkEpsqse9reMkYAAx4-lfzi8mSsPI4tYE09rDpCIozmqEgwkXm_1lTMHMBT7gWPBiRSqyew_cSGIcuNJOGWJTAKXSWR-jp-XerPGIoDyRyNRC_-2FgY3psr_dz8OtXul72FUhGv0RMr6zNPr_OD_eQkK80Qyi82ktakcYQrRArimBGXRBTssyJ7lrrY4EK3RLLy6GQms1cZdCbglh52XZBWIvdc2g7a6qXT89fX2kNGeiEHbLm0GfzVU0xT4SmFiW-OKOWxNaQcdDLc3HyRO42ZnbO5kefbdZ1jD_aUtMI1sqj8UZKvU0gCDNNEZC5MD7Xwq-aN4vhXgPYSDNDXMiKDfuaONaeSATeOMG0qNN9hfmbjdEq81h4ZwYg0w-lLkVppICXlnX4tBX1Oe506PvbAf4_lgy4OrAoBIpZLsBnMAslIcb-a-aoc0bDMuCC2q8u_emWvJzNywh5MBoDRU4mCXgjG-vmKpOpBcTCx6MVZA9qcEWQmJmeOq6ZUwTxZimkjk2XXw";
+    private static final String URL_CALCULATE = BASE_URL + "/api/v2/me/shipment/calculate";
+    private static final String URL_CART = BASE_URL + "/api/v2/me/cart";
+    private static final String URL_CHECKOUT = BASE_URL + "/api/v2/me/shipment/checkout";
+    private static final String URL_GENERATE = BASE_URL + "/api/v2/me/shipment/generate";
+    private static final String URL_PRINT = BASE_URL + "/api/v2/me/shipment/print";
+    private static final String URL_SHIPMENT_PREFIX = BASE_URL + "/api/v2/me/shipment/";
+    private static final String USER_AGENT = "Lisory (contato@lisory.com.br)";
+    // FIM TEMPORÁRIO
+
     private final RestTemplate restTemplate;
+
+    // TEMPORÁRIO - TESTES MELHOR ENVIO
+    // REMOVER ANTES DE PRODUÇÃO
+    // Construtor mantido para compatibilidade com Spring, mas dependências não são utilizadas.
+    @SuppressWarnings("unused")
     private final MelhorEnvioOAuthService oAuthService;
+    @SuppressWarnings("unused")
     private final MelhorEnvioProperties properties;
+    // FIM TEMPORÁRIO
 
     public MelhorEnvioClient(
             RestTemplate defaultRestTemplate,
@@ -33,14 +56,16 @@ public class MelhorEnvioClient {
         this.properties = properties;
     }
 
-    public MelhorEnvioCalculateResponse calculateShipping(MelhorEnvioCalculateRequest request) {
-        String url = properties.apiUrl() + "/api/v2/me/shipment/calculate";
-        log.info("Calculating shipping from {} to {}", request.from().postalCode(), request.to().postalCode());
+    public List<MelhorEnvioCalculateResponse> calculateShipping(MelhorEnvioCalculateRequest request) {
+        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
+        String url = URL_CALCULATE;
+        log.info("Calculating shipping from {} to {} [URL: {}]", request.from().postalCode(), request.to().postalCode(), url);
 
         try {
             HttpEntity<MelhorEnvioCalculateRequest> entity = new HttpEntity<>(request, createHeaders());
-            ResponseEntity<MelhorEnvioCalculateResponse> response = restTemplate.exchange(
-                    url, HttpMethod.POST, entity, MelhorEnvioCalculateResponse.class
+            ResponseEntity<List<MelhorEnvioCalculateResponse>> response = restTemplate.exchange(
+                    url, HttpMethod.POST, entity,
+                    new org.springframework.core.ParameterizedTypeReference<List<MelhorEnvioCalculateResponse>>() {}
             );
 
             log.info("Shipping calculation completed successfully");
@@ -58,7 +83,8 @@ public class MelhorEnvioClient {
     }
 
     public MelhorEnvioLabelResponse addToCart(MelhorEnvioCartRequest request) {
-        String url = properties.apiUrl() + "/api/v2/me/cart";
+        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
+        String url = URL_CART;
         log.info("Adding shipment to cart for service {}", request.service());
 
         try {
@@ -82,7 +108,8 @@ public class MelhorEnvioClient {
     }
 
     public List<MelhorEnvioLabelResponse> checkoutCart(MelhorEnvioCheckoutRequest request) {
-        String url = properties.apiUrl() + "/api/v2/me/shipment/checkout";
+        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
+        String url = URL_CHECKOUT;
         log.info("Checking out cart with service {}", request.service());
 
         try {
@@ -108,7 +135,8 @@ public class MelhorEnvioClient {
     }
 
     public MelhorEnvioGenerateResponse generateLabels(MelhorEnvioGenerateRequest request) {
-        String url = properties.apiUrl() + "/api/v2/me/shipment/generate";
+        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
+        String url = URL_GENERATE;
         log.info("Generating labels for {} orders", request.orders().size());
 
         try {
@@ -132,7 +160,8 @@ public class MelhorEnvioClient {
     }
 
     public void printLabels(MelhorEnvioPrintRequest request) {
-        String url = properties.apiUrl() + "/api/v2/me/shipment/print";
+        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
+        String url = URL_PRINT;
         log.info("Printing labels for {} orders", request.orders().size());
 
         try {
@@ -152,7 +181,8 @@ public class MelhorEnvioClient {
     }
 
     public void cancelLabel(String labelId) {
-        String url = properties.apiUrl() + "/api/v2/me/shipment/" + labelId;
+        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
+        String url = URL_SHIPMENT_PREFIX + labelId;
         log.info("Cancelling label {}", labelId);
 
         try {
@@ -172,7 +202,8 @@ public class MelhorEnvioClient {
     }
 
     public MelhorEnvioTrackingResponse getTracking(String trackingId) {
-        String url = properties.apiUrl() + "/api/v2/me/shipment/tracking/" + trackingId;
+        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
+        String url = URL_SHIPMENT_PREFIX + "tracking/" + trackingId;
         log.info("Getting tracking for {}", trackingId);
 
         try {
@@ -195,12 +226,15 @@ public class MelhorEnvioClient {
         }
     }
 
+    // TEMPORÁRIO - TESTES MELHOR ENVIO
+    // REMOVER ANTES DE PRODUÇÃO
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
-        headers.setBearerAuth(oAuthService.getAccessToken());
-        headers.set("User-Agent", properties.userAgent());
+        headers.setBearerAuth(ACCESS_TOKEN);
+        headers.set("User-Agent", USER_AGENT);
         return headers;
     }
+    // FIM TEMPORÁRIO
 }
