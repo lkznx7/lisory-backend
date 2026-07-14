@@ -27,16 +27,16 @@ class FreightCalculatorTest {
     @Test
     @DisplayName("should calculate freight correctly")
     void shouldCalculateFreight() {
-        ShippingRequest expectedRequest = new ShippingRequest(
-                "01310100", new BigDecimal("1.500"), 3);
         ShippingQuote expectedQuote = new ShippingQuote(
                 "PAC", "PAC", new BigDecimal("25.00"), 7);
 
         when(shippingProvider.calculate(any(ShippingRequest.class))).thenReturn(List.of(expectedQuote));
 
         List<FreightCalculator.FreightItem> items = List.of(
-                new FreightCalculator.FreightItem(new BigDecimal("0.500"), 2),
-                new FreightCalculator.FreightItem(new BigDecimal("0.500"), 1)
+                new FreightCalculator.FreightItem("1", new BigDecimal("0.500"), 2,
+                        new BigDecimal("15"), new BigDecimal("10"), new BigDecimal("20")),
+                new FreightCalculator.FreightItem("2", new BigDecimal("0.500"), 1,
+                        new BigDecimal("15"), new BigDecimal("10"), new BigDecimal("20"))
         );
 
         List<ShippingQuote> result = freightCalculator.calculate("01310100", items);
@@ -56,8 +56,10 @@ class FreightCalculatorTest {
         when(shippingProvider.calculate(any())).thenReturn(List.of(quote));
 
         List<FreightCalculator.FreightItem> items = List.of(
-                new FreightCalculator.FreightItem(new BigDecimal("0.250"), 4),
-                new FreightCalculator.FreightItem(new BigDecimal("0.750"), 2)
+                new FreightCalculator.FreightItem("1", new BigDecimal("0.250"), 4,
+                        new BigDecimal("15"), new BigDecimal("10"), new BigDecimal("20")),
+                new FreightCalculator.FreightItem("2", new BigDecimal("0.750"), 2,
+                        new BigDecimal("15"), new BigDecimal("10"), new BigDecimal("20"))
         );
 
         freightCalculator.calculate("22041080", items);

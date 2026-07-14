@@ -34,19 +34,41 @@ public final class MelhorEnvioProvider implements ShippingProvider {
             String originCep = properties.originCep().replaceAll("[^0-9]", "");
             String destCep = request.zipCode().replaceAll("[^0-9]", "");
 
+            log.info("shipping_request originCep={} destCep={} totalWeight={} productCount={}",
+                    originCep, destCep, request.weight(), request.productCount());
+
+            List<MelhorEnvioCalculateRequest.Product> products;
+            if (request.products() != null && !request.products().isEmpty()) {
+                products = request.products().stream()
+                        .map(p -> new MelhorEnvioCalculateRequest.Product(
+                                p.productId() != null ? p.productId() : "1",
+                                p.width() != null ? p.width().doubleValue() : 15.0,
+                                p.height() != null ? p.height().doubleValue() : 10.0,
+                                p.length() != null ? p.length().doubleValue() : 20.0,
+                                p.weight() != null ? p.weight().doubleValue() : 0.5,
+                                50.0,
+                                p.quantity() > 0 ? p.quantity() : 1
+                        ))
+                        .toList();
+            } else {
+                products = List.of(new MelhorEnvioCalculateRequest.Product(
+                        "1",
+                        15, 10, 20,
+                        request.weight() != null ? request.weight().doubleValue() : 0.5,
+                        50.0,
+                        request.productCount() != null ? request.productCount() : 1
+                ));
+            }
+
             MelhorEnvioCalculateRequest apiRequest = new MelhorEnvioCalculateRequest(
                     new MelhorEnvioCalculateRequest.Address(originCep),
                     new MelhorEnvioCalculateRequest.Address(destCep),
-                    List.of(new MelhorEnvioCalculateRequest.Product(
-                            "1",
-                            15, 10, 20,
-                            request.weight() != null ? request.weight().doubleValue() : 0.5,
-                            50.0,
-                            request.productCount() != null ? request.productCount() : 1
-                    )),
+                    products,
                     new MelhorEnvioCalculateRequest.Options(false, false),
                     null
             );
+
+            log.info("melhor_envio_request url={} to={}", "calculate", destCep);
 
             List<MelhorEnvioCalculateResponse> response = melhorEnvioClient.calculateShipping(apiRequest);
 

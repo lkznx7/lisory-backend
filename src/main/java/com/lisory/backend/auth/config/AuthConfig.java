@@ -60,7 +60,7 @@ public class AuthConfig {
                         .requestMatchers(HttpMethod.GET, "/orders/public/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/newsletter").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/shipping/**").permitAll()
+                        .requestMatchers("/api/shipping/**").permitAll()
                         .requestMatchers("/webhooks/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

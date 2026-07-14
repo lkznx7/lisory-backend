@@ -57,7 +57,6 @@ public class MelhorEnvioClient {
     }
 
     public List<MelhorEnvioCalculateResponse> calculateShipping(MelhorEnvioCalculateRequest request) {
-        // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
         String url = URL_CALCULATE;
         log.info("Calculating shipping from {} to {} [URL: {}]", request.from().postalCode(), request.to().postalCode(), url);
 
@@ -68,7 +67,16 @@ public class MelhorEnvioClient {
                     new org.springframework.core.ParameterizedTypeReference<List<MelhorEnvioCalculateResponse>>() {}
             );
 
-            log.info("Shipping calculation completed successfully");
+            log.info("Shipping calculation completed: HTTP {} bodySize={}", response.getStatusCode(),
+                    response.getBody() != null ? response.getBody().size() : 0);
+            if (response.getBody() != null) {
+                for (MelhorEnvioCalculateResponse opt : response.getBody()) {
+                    log.info("  option id={} name={} company={} price={} error={}",
+                            opt.id(), opt.name(),
+                            opt.company() != null ? opt.company().name() : "null",
+                            opt.price(), opt.error());
+                }
+            }
             return response.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             log.error("HTTP error calculating shipping: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());

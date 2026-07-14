@@ -35,7 +35,9 @@ public class ShippingController {
         ));
 
         List<FreightCalculator.FreightItem> freightItems = request.items().stream()
-                .map(item -> new FreightCalculator.FreightItem(item.weight(), item.quantity()))
+                .map(item -> new FreightCalculator.FreightItem(
+                        item.productId(), item.weight(), item.quantity(),
+                        item.width(), item.height(), item.length()))
                 .toList();
 
         try {
