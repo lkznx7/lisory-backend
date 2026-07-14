@@ -39,39 +39,28 @@ public class ShippingController {
                 .toList();
 
         try {
-            ShippingQuote quote = freightCalculator.calculate(request.zipCode(), freightItems);
+            List<ShippingQuote> quotes = freightCalculator.calculate(request.zipCode(), freightItems);
             
-            Map<String, Object> response = Map.of(
-                "options", List.of(
-                    Map.of(
-                        "carrier", quote.carrier(),
-                        "service", quote.service(),
-                        "cost", quote.cost(),
-                        "estimatedDays", quote.estimatedDays()
-                    )
-                )
-            );
+            List<Map<String, Object>> options = quotes.stream()
+                    .map(quote -> Map.<String, Object>of(
+                            "carrier", quote.carrier(),
+                            "service", quote.service(),
+                            "cost", quote.cost(),
+                            "estimatedDays", quote.estimatedDays()
+                    ))
+                    .toList();
+
+            Map<String, Object> response = Map.of("options", options);
 
             logger.info("freight_calculation_completed", Map.of(
-                "zipCode", request.zipCode(),
-                "cost", quote.cost()
+                    "zipCode", request.zipCode(),
+                    "optionCount", options.size()
             ));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("freight_calculation_error", Map.of("zipCode", request.zipCode()), e);
-            
-            Map<String, Object> fallback = Map.of(
-                "options", List.of(
-                    Map.of(
-                        "carrier", "PAC",
-                        "service", "PAC",
-                        "cost", BigDecimal.ZERO,
-                        "estimatedDays", 10
-                    )
-                )
-            );
-            return ResponseEntity.ok(fallback);
+            return ResponseEntity.internalServerError().body(Map.of("options", List.of()));
         }
     }
 

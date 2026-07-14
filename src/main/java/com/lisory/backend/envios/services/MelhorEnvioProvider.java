@@ -29,7 +29,7 @@ public final class MelhorEnvioProvider implements ShippingProvider {
     }
 
     @Override
-    public ShippingQuote calculate(ShippingRequest request) {
+    public List<ShippingQuote> calculate(ShippingRequest request) {
         try {
             String originCep = properties.originCep().replaceAll("[^0-9]", "");
             String destCep = request.zipCode().replaceAll("[^0-9]", "");
@@ -52,7 +52,7 @@ public final class MelhorEnvioProvider implements ShippingProvider {
 
             if (response == null || response.isEmpty()) {
                 log.warn("melhor_envio_no_options_found for destCep={}, falling back", destCep);
-                return fallback();
+                return List.of(fallback());
             }
 
             List<MelhorEnvioCalculateResponse> validOptions = response.stream()
@@ -61,27 +61,25 @@ public final class MelhorEnvioProvider implements ShippingProvider {
 
             if (validOptions.isEmpty()) {
                 log.warn("melhor_envio_all_options_errored for destCep={}", destCep);
-                return fallback();
+                return List.of(fallback());
             }
 
-            MelhorEnvioCalculateResponse cheapest = validOptions.stream()
-                    .min(Comparator.comparing(o -> new BigDecimal(o.price())))
-                    .orElse(null);
+            List<ShippingQuote> quotes = validOptions.stream()
+                    .map(option -> {
+                        BigDecimal cost = new BigDecimal(option.price());
+                        int days = option.deliveryRange() != null ? option.deliveryRange().max() : FALLBACK_DAYS;
+                        String carrier = option.company() != null ? option.company().name() : "UNKNOWN";
+                        String service = option.name() != null ? option.name() : "UNKNOWN";
+                        return new ShippingQuote(carrier, service, cost, days);
+                    })
+                    .sorted(Comparator.comparing(ShippingQuote::cost))
+                    .toList();
 
-            if (cheapest == null) {
-                return fallback();
-            }
-
-            BigDecimal cost = new BigDecimal(cheapest.price());
-            int days = cheapest.deliveryRange() != null ? cheapest.deliveryRange().max() : FALLBACK_DAYS;
-            String carrier = cheapest.company() != null ? cheapest.company().name() : "UNKNOWN";
-            String service = cheapest.name() != null ? cheapest.name() : "UNKNOWN";
-
-            log.info("melhor_envio_quote carrier={} service={} cost={} days={}", carrier, service, cost, days);
-            return new ShippingQuote(carrier, service, cost, days);
+            log.info("melhor_envio_quotes count={} for destCep={}", quotes.size(), destCep);
+            return quotes;
         } catch (Exception e) {
             log.error("melhor_envio_calculation_failed, falling back to default", e);
-            return fallback();
+            return List.of(fallback());
         }
     }
 

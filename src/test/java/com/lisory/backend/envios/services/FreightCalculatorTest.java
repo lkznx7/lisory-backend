@@ -32,19 +32,20 @@ class FreightCalculatorTest {
         ShippingQuote expectedQuote = new ShippingQuote(
                 "PAC", "PAC", new BigDecimal("25.00"), 7);
 
-        when(shippingProvider.calculate(any(ShippingRequest.class))).thenReturn(expectedQuote);
+        when(shippingProvider.calculate(any(ShippingRequest.class))).thenReturn(List.of(expectedQuote));
 
         List<FreightCalculator.FreightItem> items = List.of(
                 new FreightCalculator.FreightItem(new BigDecimal("0.500"), 2),
                 new FreightCalculator.FreightItem(new BigDecimal("0.500"), 1)
         );
 
-        ShippingQuote result = freightCalculator.calculate("01310100", items);
+        List<ShippingQuote> result = freightCalculator.calculate("01310100", items);
 
         assertNotNull(result);
-        assertEquals("PAC", result.carrier());
-        assertEquals(new BigDecimal("25.00"), result.cost());
-        assertEquals(7, result.estimatedDays());
+        assertEquals(1, result.size());
+        assertEquals("PAC", result.get(0).carrier());
+        assertEquals(new BigDecimal("25.00"), result.get(0).cost());
+        assertEquals(7, result.get(0).estimatedDays());
         verify(shippingProvider, times(1)).calculate(any(ShippingRequest.class));
     }
 
@@ -52,7 +53,7 @@ class FreightCalculatorTest {
     @DisplayName("should aggregate item weights correctly")
     void shouldAggregateWeights() {
         ShippingQuote quote = new ShippingQuote("SEDEX", "SEDEX", new BigDecimal("35.00"), 3);
-        when(shippingProvider.calculate(any())).thenReturn(quote);
+        when(shippingProvider.calculate(any())).thenReturn(List.of(quote));
 
         List<FreightCalculator.FreightItem> items = List.of(
                 new FreightCalculator.FreightItem(new BigDecimal("0.250"), 4),

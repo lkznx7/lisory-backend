@@ -1,5 +1,7 @@
 package com.lisory.backend.envios.services;
 
+import java.util.List;
+
 public interface ShippingProvider {
-    ShippingQuote calculate(ShippingRequest request);
+    List<ShippingQuote> calculate(ShippingRequest request);
 }

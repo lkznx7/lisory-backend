@@ -14,7 +14,7 @@ public final class FreightCalculator {
         this.shippingProvider = shippingProvider;
     }
 
-    public ShippingQuote calculate(String zipCode, List<FreightItem> items) {
+    public List<ShippingQuote> calculate(String zipCode, List<FreightItem> items) {
         BigDecimal totalWeight = items.stream()
                 .map(item -> item.getWeight().multiply(new BigDecimal(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
