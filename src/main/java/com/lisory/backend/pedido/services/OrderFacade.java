@@ -96,6 +96,8 @@ public class OrderFacade {
         Order order = createOrder(userId, address, coupon, subtotal, discount, request);
         order.setStatus(OrderStatus.PENDING_PAYMENT.name());
         order.setShippingCost(shippingCost);
+        order.setShippingCarrier(request.shippingCarrier());
+        order.setShippingService(request.shippingService());
         order.setTotal(subtotal.subtract(discount).add(shippingCost));
         Order savedOrder = orderRepository.save(order);
 
@@ -125,7 +127,9 @@ public class OrderFacade {
         order.setStatus(OrderStatus.PAGO.name());
         Order savedOrder = orderRepository.save(order);
 
-        ShippingQuote defaultQuote = new ShippingQuote("PAC", "PAC", BigDecimal.ZERO, 0);
+        String carrier = order.getShippingCarrier() != null ? order.getShippingCarrier() : "PAC";
+        String service = order.getShippingService() != null ? order.getShippingService() : "PAC";
+        ShippingQuote defaultQuote = new ShippingQuote(carrier, service, BigDecimal.ZERO, 0);
         shipmentService.createShipment(orderId, defaultQuote);
 
         return responseMapper.toResponse(savedOrder);

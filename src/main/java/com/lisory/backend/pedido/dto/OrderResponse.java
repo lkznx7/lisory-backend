@@ -23,6 +23,8 @@ public record OrderResponse(
         String guestEmail,
         String guestPhone,
         String guestCpf,
+        String shippingCarrier,
+        String shippingService,
         List<OrderItemResponse> items,
         UUID paymentId,
         String paymentStatus,

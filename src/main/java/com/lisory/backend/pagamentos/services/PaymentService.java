@@ -42,6 +42,14 @@ public class PaymentService {
         payment.setOrder(entityManager.getReference(Order.class, orderId));
         payment.setPaymentMethod(paymentMethod);
         payment.setAmount(amount);
+
+        if ("PAGAR_NA_RETIRADA".equalsIgnoreCase(paymentMethod)) {
+            payment.setStatus("PAGAMENTO_NA_RETIRADA");
+            Payment saved = paymentRepository.save(payment);
+            log.info("Payment initiated for pickup order {}: status=PAGAMENTO_NA_RETIRADA", orderId);
+            return toDto(saved);
+        }
+
         payment.setStatus("PROCESSING");
         Payment saved = paymentRepository.save(payment);
 
@@ -82,6 +90,14 @@ public class PaymentService {
         payment.setOrder(entityManager.getReference(Order.class, orderId));
         payment.setPaymentMethod(paymentMethod);
         payment.setAmount(amount);
+
+        if ("PAGAR_NA_RETIRADA".equalsIgnoreCase(paymentMethod)) {
+            payment.setStatus("PAGAMENTO_NA_RETIRADA");
+            payment = paymentRepository.save(payment);
+            log.info("Payment processed for pickup order {}: status=PAGAMENTO_NA_RETIRADA", orderId);
+            return new GatewayResponse("PICKUP", "PICKUP", "PAGAMENTO_NA_RETIRADA", null, null, null, null, null);
+        }
+
         payment.setStatus("PROCESSING");
         payment = paymentRepository.save(payment);
 

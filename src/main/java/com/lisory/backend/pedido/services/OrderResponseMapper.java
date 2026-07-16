@@ -76,6 +76,8 @@ public class OrderResponseMapper {
                 order.getGuestEmail(),
                 order.getGuestPhone(),
                 order.getGuestCpf(),
+                order.getShippingCarrier(),
+                order.getShippingService(),
                 items,
                 payment != null ? payment.getId() : null,
                 payment != null ? payment.getStatus() : null,

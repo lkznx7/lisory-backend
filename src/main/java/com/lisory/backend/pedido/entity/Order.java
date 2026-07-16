@@ -58,6 +58,12 @@ public class Order {
     @Column(name = "guest_cpf", length = 14)
     private String guestCpf;
 
+    @Column(name = "shipping_carrier", length = 255)
+    private String shippingCarrier;
+
+    @Column(name = "shipping_service", length = 255)
+    private String shippingService;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrderItem> items = new LinkedHashSet<>();
@@ -107,6 +113,10 @@ public class Order {
     public void setGuestPhone(String guestPhone) { this.guestPhone = guestPhone; }
     public String getGuestCpf() { return guestCpf; }
     public void setGuestCpf(String guestCpf) { this.guestCpf = guestCpf; }
+    public String getShippingCarrier() { return shippingCarrier; }
+    public void setShippingCarrier(String shippingCarrier) { this.shippingCarrier = shippingCarrier; }
+    public String getShippingService() { return shippingService; }
+    public void setShippingService(String shippingService) { this.shippingService = shippingService; }
     public Set<OrderItem> getItems() { return items; }
     public void setItems(Set<OrderItem> items) { this.items = items; }
     public LocalDateTime getCreatedAt() { return createdAt; }
