@@ -104,6 +104,7 @@ public class CartService {
         }
 
         if (request.quantity() <= 0) {
+            cart.getItems().remove(item);
             cartItemRepository.delete(item);
         } else {
             item.setQuantity(request.quantity());
@@ -124,6 +125,7 @@ public class CartService {
             throw new ResourceNotFoundException("CartItem", "id", itemId);
         }
 
+        cart.getItems().remove(item);
         cartItemRepository.delete(item);
 
         return toResponse(cart);
