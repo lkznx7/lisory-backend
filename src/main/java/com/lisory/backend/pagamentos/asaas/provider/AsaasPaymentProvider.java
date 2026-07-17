@@ -93,7 +93,7 @@ public class AsaasPaymentProvider implements PaymentProvider {
         return switch (paymentMethod.toUpperCase()) {
             case "PIX" -> "PIX";
             case "BOLETO", "BOL", "SLIP" -> "BOLETO";
-            case "CREDIT_CARD", "CARTAO", "CARTAO_CREDITO", "CREDIT" -> "CREDIT_CARD";
+            case "CREDIT_CARD", "CARTAO", "CARTAO_CREDITO", "CREDIT", "CARD" -> "CREDIT_CARD";
             default -> "PIX";
         };
     }
