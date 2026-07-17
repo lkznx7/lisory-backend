@@ -96,9 +96,24 @@ public class Product {
     public void setDescription(String description) { this.description = description; }
     public String getSku() { return sku; }
     public void setSku(String sku) { this.sku = sku; }
-    public BigDecimal getPrice() { return price; }
+    private BigDecimal adjustPrice(BigDecimal value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            BigDecimal integerPart = new BigDecimal(value.toBigInteger());
+            if (value.compareTo(integerPart) == 0) {
+                return value.subtract(new BigDecimal("0.10"));
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return value;
+    }
+
+    public BigDecimal getPrice() { return adjustPrice(price); }
     public void setPrice(BigDecimal price) { this.price = price; }
-    public BigDecimal getPromotionalPrice() { return promotionalPrice; }
+    public BigDecimal getPromotionalPrice() { return adjustPrice(promotionalPrice); }
     public void setPromotionalPrice(BigDecimal promotionalPrice) { this.promotionalPrice = promotionalPrice; }
     public Integer getStockQuantity() { return stockQuantity; }
     public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
