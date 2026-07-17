@@ -45,4 +45,39 @@ public class AuthController {
                 "isActive", user.getActive()
         ));
     }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthEntity user)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+        authenticationService.updateProfile(user.getId(), request.email());
+        return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthEntity user)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+        authenticationService.changePassword(user.getId(), request.currentPassword(), request.newPassword());
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+    }
+
+    public record UpdateProfileRequest(
+        @jakarta.validation.constraints.NotBlank 
+        @jakarta.validation.constraints.Email 
+        String email
+    ) {}
+
+    public record ChangePasswordRequest(
+        @jakarta.validation.constraints.NotBlank 
+        String currentPassword,
+        
+        @jakarta.validation.constraints.NotBlank 
+        @jakarta.validation.constraints.Size(min = 8) 
+        String newPassword
+    ) {}
 }

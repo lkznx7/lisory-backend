@@ -22,7 +22,7 @@ public class PublicCouponController {
 
     @PostMapping("/validate")
     public ResponseEntity<CouponResponse> validate(@Valid @RequestBody ValidateCouponRequest request) {
-        couponService.validateAndApply(request.code(), request.orderValue(), null);
+        couponService.validate(request.code(), request.orderValue(), null);
         return ResponseEntity.ok(couponService.findByCode(request.code()));
     }
 

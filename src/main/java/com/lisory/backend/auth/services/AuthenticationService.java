@@ -46,4 +46,30 @@ public class AuthenticationService {
         String token = tokenProvider.generateToken(user.getEmail());
         return new AuthResponse(token, "Bearer");
     }
+
+    public void updateProfile(java.util.UUID userId, String email) {
+        AuthEntity user = authRepository.findById(userId)
+                .orElseThrow(() -> new com.lisory.backend.exception.ResourceNotFoundException("User", "id", userId));
+        
+        String newEmail = email.toLowerCase().trim();
+        if (!user.getEmail().equalsIgnoreCase(newEmail)) {
+            if (authRepository.existsByEmail(newEmail)) {
+                throw new EmailAlreadyExistsException(newEmail);
+            }
+            user.setEmail(newEmail);
+            authRepository.save(user);
+        }
+    }
+
+    public void changePassword(java.util.UUID userId, String currentPassword, String newPassword) {
+        AuthEntity user = authRepository.findById(userId)
+                .orElseThrow(() -> new com.lisory.backend.exception.ResourceNotFoundException("User", "id", userId));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new InvalidCredentialsException("Senha atual incorreta");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        authRepository.save(user);
+    }
 }

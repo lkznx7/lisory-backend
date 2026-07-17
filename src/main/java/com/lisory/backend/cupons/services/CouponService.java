@@ -165,7 +165,7 @@ public class CouponService {
         return new CouponStatusResponse(coupon.getCode(), "active", "Coupon is active and valid");
     }
 
-    public Coupon validateAndApply(String code, BigDecimal orderValue, String customerEmail) {
+    public Coupon validate(String code, BigDecimal orderValue, String customerEmail) {
         Coupon coupon = couponRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Coupon", "code", code));
 
@@ -185,9 +185,14 @@ public class CouponService {
             throw new BusinessException("Order value does not meet the minimum required value of " + coupon.getMinOrderValue());
         }
 
+        return coupon;
+    }
+
+    @Transactional
+    public Coupon validateAndApply(String code, BigDecimal orderValue, String customerEmail) {
+        Coupon coupon = validate(code, orderValue, customerEmail);
         coupon.setUsedCount(coupon.getUsedCount() + 1);
         couponRepository.save(coupon);
-
         return coupon;
     }
 
