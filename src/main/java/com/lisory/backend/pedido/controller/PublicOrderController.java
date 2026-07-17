@@ -10,6 +10,8 @@ import com.lisory.backend.pedido.entity.Order;
 import com.lisory.backend.pedido.repository.OrderRepository;
 import com.lisory.backend.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/orders/public")
 public class PublicOrderController {
+
+    private static final Logger log = LoggerFactory.getLogger(PublicOrderController.class);
 
     private final OrderService orderService;
     private final OrderFacade orderFacade;
@@ -39,6 +43,8 @@ public class PublicOrderController {
     public ResponseEntity<OrderResponse> createGuestOrder(
             @Valid @RequestBody OrderRequest request,
             @RequestHeader(value = "X-Guest-Cart-Id", required = false) UUID guestCartId) {
+        log.info("[TEMPORARY LOG] Payload recebido: {}", request);
+        log.info("[TEMPORARY LOG] paymentMethod recebido: {}", request.paymentMethod());
         UUID userId = getCurrentUserId();
         return ResponseEntity.ok(orderFacade.checkout(userId, guestCartId, request));
     }

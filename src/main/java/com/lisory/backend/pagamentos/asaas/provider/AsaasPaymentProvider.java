@@ -47,6 +47,10 @@ public class AsaasPaymentProvider implements PaymentProvider {
 
         String billingType = mapBillingType(request.paymentMethod());
 
+        log.info("temporary_log_billing_type_gerado", Map.of(
+                "billingType", billingType != null ? billingType : "null"
+        ));
+
         AsaasCustomerResponse customer = findOrCreateCustomer(order);
 
         String dueDate = LocalDate.now().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -64,6 +68,15 @@ public class AsaasPaymentProvider implements PaymentProvider {
                 null,
                 null
         );
+
+        log.info("temporary_log_payload_enviado_asaas", Map.of(
+                "customerId", chargeRequest.customerId() != null ? chargeRequest.customerId() : "null",
+                "billingType", chargeRequest.billingType() != null ? chargeRequest.billingType() : "null",
+                "value", chargeRequest.value() != null ? chargeRequest.value().toString() : "null",
+                "dueDate", chargeRequest.dueDate() != null ? chargeRequest.dueDate() : "null",
+                "description", chargeRequest.description() != null ? chargeRequest.description() : "null",
+                "externalReference", chargeRequest.externalReference() != null ? chargeRequest.externalReference() : "null"
+        ));
 
         AsaasChargeResponse charge = client.createCharge(chargeRequest);
         if (charge == null || charge.id() == null || charge.id().isBlank()) {
