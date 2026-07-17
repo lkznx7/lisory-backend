@@ -98,6 +98,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private void createProducts() {
         Category scoop = categoryRepository.findBySlug("scoop").orElse(null);
+        Category colares = categoryRepository.findBySlug("colares").orElse(null);
         Collection verao = collectionRepository.findBySlug("verao-2026").orElse(null);
         Collection classica = collectionRepository.findBySlug("classica").orElse(null);
 
@@ -132,6 +133,10 @@ public class DataInitializer implements CommandLineRunner {
         createProduct("PULSEIRA CHIADO", "pulseira-chiado",
                 "Pulseira feminina com pingentes dourados. Combina com todas as ocasioes.",
                 new BigDecimal("119.00"), null, null, classica, true, false, "/images/scoop-4.jpg");
+
+        createProduct("Colar Sweet Cherry", "colar-sweet-cherry",
+                "Colar Sweet Cherry - A elegância em forma de pingente.\n\nUma peça delicada e cheia de personalidade para complementar seu visual.",
+                new BigDecimal("69.90"), null, colares, classica, true, false, "/images/ColarSweetcherry.png");
     }
 
     private void createProduct(String name, String slug, String description,
