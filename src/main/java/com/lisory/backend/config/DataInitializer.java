@@ -69,6 +69,8 @@ public class DataInitializer implements CommandLineRunner {
         createCategory("Scoop", "scoop", "Caixas surpresa com acessorios selectionados especialmente para voce");
         createCategory("Dourados", "dourados", "Acessorios dourados com garantia de 6 meses");
         createCategory("Prata", "prata", "Acessorios de prata com garantia de 1 ano");
+        createCategory("Pulseiras", "pulseiras", "Coleção especial de pulseiras");
+        createCategory("Colares", "colares", "Coleção especial de colares");
     }
 
     private void createCategory(String name, String slug, String description) {
