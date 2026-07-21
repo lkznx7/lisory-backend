@@ -46,7 +46,8 @@ public record MelhorEnvioCartRequest(
         @JsonProperty("insurance_value") double insuranceValue,
         @JsonProperty("receipt") boolean receipt,
         @JsonProperty("own_hand") boolean ownHand,
-        @JsonProperty("invoice") InvoiceInfo invoice
+        @JsonProperty("invoice") InvoiceInfo invoice,
+        @JsonProperty("reminder") String reminder
     ) {}
 
     public record InvoiceInfo(

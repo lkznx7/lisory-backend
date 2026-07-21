@@ -82,8 +82,9 @@ public class MelhorEnvioShipmentService {
             List<MelhorEnvioCartRequest.ProductInfo> products = buildProducts(order);
             List<MelhorEnvioCartRequest.VolumeInfo> volumes = buildVolumes(order);
             double insuranceValue = order.getTotal().doubleValue();
+            String reminder = buildReminder(order);
             MelhorEnvioCartRequest.CartOptions options = new MelhorEnvioCartRequest.CartOptions(
-                    insuranceValue, false, false, null);
+                    insuranceValue, false, false, null, reminder);
 
             MelhorEnvioCartRequest cartRequest = new MelhorEnvioCartRequest(
                     serviceId, from, to, products, volumes, options);
@@ -116,7 +117,7 @@ public class MelhorEnvioShipmentService {
             log.info("[MELHOR_ENVIO_SHIPMENT] addToCart OK | id={} protocol={} status={}",
                     cartResponse.id(), cartResponse.protocol(), cartResponse.status());
 
-            List<MelhorEnvioLabelResponse> checkoutOrders = labelService.checkout(serviceId, insuranceValue, true);
+            List<MelhorEnvioLabelResponse> checkoutOrders = labelService.checkout(List.of(cartResponse.id()));
             if (checkoutOrders == null || checkoutOrders.isEmpty()) {
                 log.error("[MELHOR_ENVIO_SHIPMENT] checkout returned empty for order {}", orderId);
                 return;
@@ -253,5 +254,19 @@ public class MelhorEnvioShipmentService {
         if (totalWeightKg == 0) totalWeightKg = 0.5;
 
         return List.of(new MelhorEnvioCartRequest.VolumeInfo(maxHeight, maxWidth, totalLength, totalWeightKg));
+    }
+
+    private String buildReminder(Order order) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Lisory: ");
+        List<String> itemsDesc = order.getItems().stream()
+                .map(item -> item.getQuantity() + "x " + (item.getProduct().getName() != null ? item.getProduct().getName() : "Produto"))
+                .toList();
+        sb.append(String.join(", ", itemsDesc));
+        String result = sb.toString();
+        if (result.length() > 95) {
+            result = result.substring(0, 92) + "...";
+        }
+        return result;
     }
 }

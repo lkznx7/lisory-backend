@@ -109,6 +109,11 @@ public class OrderFacade {
 
         cartItemRepository.deleteByCartId(cart.getId());
 
+        String carrier = request.shippingCarrier() != null ? request.shippingCarrier() : "PAC";
+        String service = request.shippingService() != null ? request.shippingService() : "PAC";
+        ShippingQuote shippingQuote = new ShippingQuote(carrier, service, shippingCost, 0);
+        shipmentService.createShipment(savedOrder.getId(), shippingQuote);
+
         paymentService.initiatePayment(savedOrder.getId(), request.paymentMethod(), savedOrder.getTotal());
 
         return responseMapper.toResponse(savedOrder);

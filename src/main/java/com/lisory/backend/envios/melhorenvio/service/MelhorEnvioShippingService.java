@@ -110,9 +110,9 @@ public class MelhorEnvioShippingService {
         return response;
     }
 
-    public List<MelhorEnvioLabelResponse> checkoutCart(int serviceId, double insuranceValue) {
-        log.info("Checking out cart with service {}", serviceId);
-        MelhorEnvioCheckoutRequest request = new MelhorEnvioCheckoutRequest(serviceId, insuranceValue, true);
+    public List<MelhorEnvioLabelResponse> checkoutCart(List<String> orderIds) {
+        log.info("Checking out cart for order ids {}", orderIds);
+        MelhorEnvioCheckoutRequest request = new MelhorEnvioCheckoutRequest(orderIds);
         List<MelhorEnvioLabelResponse> response = client.checkoutCart(request);
         log.info("Cart checkout completed, {} orders processed", response != null ? response.size() : 0);
         return response;

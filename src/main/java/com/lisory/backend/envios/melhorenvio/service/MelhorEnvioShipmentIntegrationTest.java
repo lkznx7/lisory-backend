@@ -56,7 +56,7 @@ public class MelhorEnvioShipmentIntegrationTest implements CommandLineRunner {
             );
 
             MelhorEnvioCartRequest.CartOptions options = new MelhorEnvioCartRequest.CartOptions(
-                    99.90, false, false, null
+                    99.90, false, false, null, "Lisory: 1x Produto Teste"
             );
 
             MelhorEnvioCartRequest cartRequest = new MelhorEnvioCartRequest(
@@ -72,7 +72,7 @@ public class MelhorEnvioShipmentIntegrationTest implements CommandLineRunner {
                     cartResponse.id(), cartResponse.protocol(), cartResponse.service(), cartResponse.status());
 
             log.info("STEP 2: checkoutCart");
-            MelhorEnvioCheckoutRequest checkoutRequest = new MelhorEnvioCheckoutRequest(serviceId, 99.90, true);
+            MelhorEnvioCheckoutRequest checkoutRequest = new MelhorEnvioCheckoutRequest(List.of(cartResponse.id()));
             List<MelhorEnvioLabelResponse> checkoutResponse = client.checkoutCart(checkoutRequest);
             log.info("Response: {} orders", checkoutResponse.size());
             for (MelhorEnvioLabelResponse r : checkoutResponse) {

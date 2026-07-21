@@ -118,7 +118,7 @@ public class MelhorEnvioClient {
     public List<MelhorEnvioLabelResponse> checkoutCart(MelhorEnvioCheckoutRequest request) {
         // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
         String url = URL_CHECKOUT;
-        log.info("Checking out cart with service {}", request.service());
+        log.info("Checking out cart for orders {}", request.orders());
 
         try {
             HttpEntity<MelhorEnvioCheckoutRequest> entity = new HttpEntity<>(request, createHeaders());
@@ -167,15 +167,18 @@ public class MelhorEnvioClient {
         }
     }
 
-    public void printLabels(MelhorEnvioPrintRequest request) {
+    public MelhorEnvioPrintResponse printLabels(MelhorEnvioPrintRequest request) {
         // TEMPORÁRIO - TESTES MELHOR ENVIO - URL hardcoded
         String url = URL_PRINT;
         log.info("Printing labels for {} orders", request.orders().size());
 
         try {
             HttpEntity<MelhorEnvioPrintRequest> entity = new HttpEntity<>(request, createHeaders());
-            restTemplate.exchange(url, HttpMethod.POST, entity, Object.class);
+            ResponseEntity<MelhorEnvioPrintResponse> response = restTemplate.exchange(
+                    url, HttpMethod.POST, entity, MelhorEnvioPrintResponse.class
+            );
             log.info("Labels sent to print successfully");
+            return response.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             log.error("HTTP error printing labels: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new MelhorEnvioException(

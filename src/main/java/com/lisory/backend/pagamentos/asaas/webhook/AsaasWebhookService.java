@@ -10,10 +10,13 @@ import com.lisory.backend.pedido.repository.OrderRepository;
 import com.lisory.backend.shared.log.StructuredLogger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class AsaasWebhookService {
@@ -91,19 +94,42 @@ public class AsaasWebhookService {
 
         if ("APPROVED".equals(newStatus)) {
             Order order = orderRepository.findById(orderId).orElse(null);
-            if (order != null && OrderStatus.PENDING_PAYMENT.name().equals(order.getStatus())) {
-                order.setStatus(OrderStatus.PAGO.name());
-                orderRepository.save(order);
-                log.info("asaas_webhook_order_updated", Map.of(
-                        "orderId", orderId.toString(),
-                        "newStatus", OrderStatus.PAGO.name()
-                ));
+            if (order != null) {
+                boolean wasPending = OrderStatus.PENDING_PAYMENT.name().equals(order.getStatus());
+                if (wasPending) {
+                    order.setStatus(OrderStatus.PAGO.name());
+                    orderRepository.save(order);
+                    log.info("asaas_webhook_order_updated", Map.of(
+                            "orderId", orderId.toString(),
+                            "newStatus", OrderStatus.PAGO.name()
+                    ));
+                }
 
-                try {
-                    melhorEnvioShipmentService.generateShipment(orderId);
-                } catch (Exception e) {
-                    log.error("asaas_webhook_shipment_generation_failed",
-                            Map.of("orderId", orderId.toString(), "error", e.getMessage()));
+                if (OrderStatus.PAGO.name().equals(order.getStatus())) {
+                    if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                            @Override
+                            public void afterCommit() {
+                                CompletableFuture.runAsync(() -> {
+                                    try {
+                                        melhorEnvioShipmentService.generateShipment(orderId);
+                                    } catch (Exception e) {
+                                        log.error("asaas_webhook_shipment_generation_failed",
+                                                Map.of("orderId", orderId.toString(), "error", e.getMessage()));
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        CompletableFuture.runAsync(() -> {
+                            try {
+                                melhorEnvioShipmentService.generateShipment(orderId);
+                            } catch (Exception e) {
+                                log.error("asaas_webhook_shipment_generation_failed",
+                                        Map.of("orderId", orderId.toString(), "error", e.getMessage()));
+                            }
+                        });
+                    }
                 }
             }
         }
